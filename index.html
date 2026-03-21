@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Under 9 Pro - Gestão Segura</title>
+    <style>
+        :root { --bg: #0b0e11; --card: #1e2329; --border: #30363d; --text: #eaecef; --accent: #f0b90b; --green: #0ecb81; --red: #f6465d; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .dashboard { display: grid; grid-template-columns: 320px 1fr; grid-template-rows: auto 1fr; gap: 15px; width: 95vw; max-width: 1250px; height: 90vh; background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .top-bar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .sidebar { display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--border); padding-right: 15px; overflow-y: auto; }
+        .stat-box { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        .stat-label { font-size: 10px; color: #848e9c; text-transform: uppercase; margin-bottom: 2px; display: block; }
+        .stat-value { font-size: 1.2rem; font-weight: bold; }
+        .config-box { background: rgba(240, 185, 11, 0.04); padding: 12px; border-radius: 8px; border: 1px solid rgba(240, 185, 11, 0.15); }
+        .input-sidebar, .select-sidebar { background: #0b0e11; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 4px; width: 100%; font-size: 13px; outline: none; box-sizing: border-box; margin-bottom: 8px; }
+        #bot-analysis { font-size: 11px; font-weight: bold; padding: 8px; border-radius: 4px; text-align: center; margin-bottom: 5px; background: #000; border: 1px solid #333; }
+        .analyzing { color: var(--accent); border-color: var(--accent) !important; animation: blink 1.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .log-container { flex-grow: 1; background: #000; border-radius: 8px; padding: 15px; font-family: 'Consolas', monospace; font-size: 12px; border: 1px solid #333; overflow-y: hidden; display: flex; flex-direction: column; }
+        .log-entry { padding: 4px 0; border-bottom: 1px solid #111; }
+        button { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-start { background: var(--green); color: #000; }
+        .btn-stop { background: var(--red); color: #fff; margin-top: 5px; }
+        #modal-report { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e2329; border: 2px solid var(--accent); padding: 25px; border-radius: 12px; z-index: 100; text-align: center; box-shadow: 0 0 50px #000; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="top-bar">
+        <div><b style="color:var(--accent)">UNDER 9 PRO</b> <span id="status-text" style="color:var(--red); font-size:11px; margin-left:10px;">OFFLINE</span></div>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div id="timer" style="font-family: monospace; font-size: 14px; color: var(--accent);">00:00:00</div>
+            <input type="password" id="token" placeholder="Token API..." style="background:#2b3139; border:1px solid var(--border); color:#fff; padding:6px; font-size:11px; width:180px;">
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div id="bot-analysis">AGUARDANDO...</div>
+        <div class="stat-box"><span class="stat-label">Saldo Atual</span><div id="balance" class="stat-value">$ 0.00</div></div>
+        
+        <div class="config-box">
+            <label class="stat-label">Mercado</label>
+            <select id="inp-mercado" class="select-sidebar">
+                <option value="1HZ100V">Volatility 100 (1s)</option>
+                <option value="1HZ10V">Volatility 10 (1s)</option>
+                <option value="R_100">Volatility 100</option>
+                <option value="R_10">Volatility 10</option>
+            </select>
+            
+            <div style="display:flex; gap:5px;">
+                <div style="flex:1"><label class="stat-label">Stake</label><input type="number" id="inp-stake" class="input-sidebar" value="0.35" step="0.01"></div>
+                <div style="flex:1"><label class="stat-label">Máx Loss</label><input type="number" id="inp-mart-limit" class="input-sidebar" value="5"></div>
+            </div>
+
+            <div style="display:flex; gap:5px;">
+                <div style="flex:1"><label class="stat-label">Stop Gain</label><input type="number" id="inp-gain" class="input-sidebar" value="3.00" step="0.10"></div>
+                <div style="flex:1"><label class="stat-label">Stop Loss</label><input type="number" id="inp-loss" class="input-sidebar" value="10.00" step="0.10"></div>
+            </div>
+        </div>
+
+        <div class="stat-box"><span class="stat-label">Lucro da Sessão</span>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div id="lucro" class="stat-value">$ 0.00</div>
+                <div style="font-size:0.9rem;"><span id="wins" style="color:var(--green)">0</span> / <span id="losses" style="color:var(--red)">0</span></div>
+            </div>
+        </div>
+        
+        <button id="btnStart" class="btn-start" onclick="iniciarBot()">▶ Iniciar Bot</button>
+        <button class="btn-stop" onclick="pararBot('MANUAL')">⏹ Parar Bot</button>
+    </div>
+
+    <div class="main-content">
+        <div class="log-container" id="log"></div>
+        <div id="modal-report">
+            <h2 style="color:var(--accent); margin:0;">RELATÓRIO FINAL</h2>
+            <div id="rep-txt" style="margin:20px 0; font-size:16px;"></div>
+            <button onclick="document.getElementById('modal-report').style.display='none'" style="background:var(--accent); width:100%; color:#000; font-weight:bold;">FECHAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let est = { operando: false, lucro: 0, prejuizoAcumulado: 0, wins: 0, losses: 0, stake: 0.35, hist: [], lossConsec: 0, balance: 0, startTime: null };
+    let ws;
+    let timerInterval;
+
+    window.onload = () => { if(localStorage.getItem('token')) document.getElementById('token').value = localStorage.getItem('token'); };
+
+    function runTimer() {
+        est.startTime = new Date();
+        timerInterval = setInterval(() => {
+            let diff = Math.floor((new Date() - est.startTime) / 1000);
+            let h = Math.floor(diff / 3600).toString().padStart(2, '0');
+            let m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+            let s = (diff % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${h}:${m}:${s}`;
+        }, 1000);
+    }
+
+    function updateStatus(txt, active = true) {
+        const el = document.getElementById('bot-analysis');
+        el.textContent = txt; el.className = active ? "analyzing" : "";
+    }
+
+    function addLog(msg, color = "#0ecb81") {
+        const log = document.getElementById('log');
+        const entry = document.createElement('div');
+        entry.className = "log-entry"; entry.style.color = color;
+        entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        log.prepend(entry);
+        if (log.children.length > 25) log.removeChild(log.lastChild);
+    }
+
+    function atualizarUI() {
+        document.getElementById('lucro').textContent = `$ ${est.lucro.toFixed(2)}`;
+        document.getElementById('balance').textContent = `$ ${est.balance.toFixed(2)}`;
+        document.getElementById('wins').textContent = est.wins;
+        document.getElementById('losses').textContent = est.losses;
+    }
+
+    function iniciarBot() {
+        if(est.operando) return;
+        const token = document.getElementById('token').value.trim();
+        if(!token) return alert("Insira seu Token!");
+        localStorage.setItem('token', token);
+
+        document.getElementById('btnStart').disabled = true;
+        est.stake = parseFloat(document.getElementById('inp-stake').value);
+        est.lucro = 0; est.prejuizoAcumulado = 0; est.wins = 0; est.losses = 0; est.lossConsec = 0;
+        runTimer();
+
+        ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1089');
+        ws.onopen = () => ws.send(JSON.stringify({ authorize: token }));
+        
+        ws.onmessage = (m) => {
+            const data = JSON.parse(m.data);
+            if(data.error) { addLog(data.error.message, "var(--red)"); pararBot(); return; }
+            if(data.authorize) {
+                est.operando = true;
+                est.balance = data.authorize.balance;
+                document.getElementById('status-text').textContent = "ONLINE";
+                document.getElementById('status-text').style.color = "var(--green)";
+                updateStatus("ANALISANDO...");
+                ws.send(JSON.stringify({ ticks: document.getElementById('inp-mercado').value, subscribe: 1 }));
+                ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+            }
+            if(data.balance) { est.balance = data.balance.balance; atualizarUI(); }
+            if(data.tick) {
+                const d = parseInt(data.tick.quote.toString().slice(-1));
+                atualizarUI();
+                if(est.operando && !est.aguardando) {
+                    if(est.prejuizoAcumulado === 0) {
+                        if(d === 9) { updateStatus("GATILHO: 9!"); comprar(9); }
+                        else { updateStatus("AGUARDANDO DÍGITO 9..."); }
+                    } else {
+                        if(d >= 7) { updateStatus("MODO RECUPERAÇÃO..."); comprar(8); }
+                        else { updateStatus("ANÁLISE DE SEGURANÇA..."); }
+                    }
+                }
+            }
+            if(data.proposal_open_contract && data.proposal_open_contract.is_sold) {
+                const p = parseFloat(data.proposal_open_contract.profit);
+                est.lucro += p;
+                if(p > 0) { 
+                    est.wins++; est.lossConsec = 0;
+                    est.prejuizoAcumulado = Math.max(0, est.prejuizoAcumulado - p);
+                    if(est.prejuizoAcumulado === 0) {
+                        est.stake = parseFloat(document.getElementById('inp-stake').value);
+                        addLog(`WIN: +$${p.toFixed(2)}`, "var(--green)");
+                    } else {
+                        addLog(`RECUPERANDO: -$${est.prejuizoAcumulado.toFixed(2)}`, "var(--accent)");
+                    }
+                } else {
+                    est.losses++; est.lossConsec++;
+                    est.prejuizoAcumulado += Math.abs(p);
+                    addLog(`LOSS: -$${Math.abs(p).toFixed(2)}`, "var(--red)");
+                    if(est.lossConsec >= parseInt(document.getElementById('inp-mart-limit').value)) return pararBot("LIMITE DE LOSSES");
+                    
+                    // Recuperação fracionada para não dobrar stake (Cálculo de 1.5x arredondado)
+                    est.stake = parseFloat(((est.prejuizoAcumulado / 0.8) / 1.4).toFixed(2));
+                    if(est.stake < parseFloat(document.getElementById('inp-stake').value)) est.stake = parseFloat(document.getElementById('inp-stake').value);
+                }
+                setTimeout(() => { 
+                    est.aguardando = false; 
+                    if(est.lucro >= parseFloat(document.getElementById('inp-gain').value)) pararBot("STOP GAIN ATINGIDO");
+                    if(est.lucro <= -parseFloat(document.getElementById('inp-loss').value)) pararBot("STOP LOSS ATINGIDO");
+                }, 800);
+            }
+            if(data.buy) ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id: data.buy.contract_id, subscribe: 1 }));
+        };
+    }
+
+    function comprar(bar) {
+        est.aguardando = true;
+        const s = parseFloat(est.stake.toFixed(2));
+        ws.send(JSON.stringify({ buy: 1, price: s, parameters: { amount: s, basis: "stake", contract_type: "DIGITUNDER", currency: "USD", duration: 1, duration_unit: "t", barrier: bar.toString(), symbol: document.getElementById('inp-mercado').value } }));
+    }
+
+    function pararBot(msg) {
+        est.operando = false; clearInterval(timerInterval); if(ws) ws.close();
+        document.getElementById('status-text').textContent = "OFFLINE";
+        document.getElementById('status-text').style.color = "var(--red)";
+        document.getElementById('btnStart').disabled = false;
+        updateStatus("PARADO", false);
+        document.getElementById('rep-txt').innerHTML = `
+            <b>Status:</b> ${msg}<br>
+            <b>Resultado:</b> <span style="color:${est.lucro>=0?'#0ecb81':'#f6465d'}">$ ${est.lucro.toFixed(2)}</span><br>
+            <b>Tempo:</b> ${document.getElementById('timer').textContent}<br>
+            <b>Placar:</b> ${est.wins}W / ${est.losses}L
+        `;
+        document.getElementById('modal-report').style.display = 'block';
+    }
+</script>
+</body>
+</html>
