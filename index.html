@@ -2,259 +2,259 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Under 9 Pro - Stake 1.0</title>
+    <title>SafeGuard v34.0 - Ultra Stable</title>
     <style>
-        :root { --bg: #0b0e11; --card: #1e2329; --border: #30363d; --text: #eaecef; --accent: #f0b90b; --green: #0ecb81; --red: #f6465d; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; transition: 0.5s; }
-        .login-box { background: var(--card); padding: 40px; border-radius: 12px; border: 1px solid var(--border); width: 300px; text-align: center; }
-        .login-input { background: #0b0e11; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; width: 100%; margin-bottom: 15px; box-sizing: border-box; outline: none; }
-        .btn-login { background: var(--accent); color: #000; width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-
-        #main-bot { display: none; }
-        .dashboard { display: grid; grid-template-columns: 320px 1fr; grid-template-rows: auto 1fr; gap: 15px; width: 95vw; max-width: 1250px; height: 90vh; background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
-        .top-bar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-        .sidebar { display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--border); padding-right: 15px; overflow-y: auto; }
-        .stat-box { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
-        .stat-label { font-size: 10px; color: #848e9c; text-transform: uppercase; margin-bottom: 2px; display: block; }
-        .stat-value { font-size: 1.2rem; font-weight: bold; }
-        .config-box { background: rgba(240, 185, 11, 0.04); padding: 12px; border-radius: 8px; border: 1px solid rgba(240, 185, 11, 0.15); }
-        .input-sidebar, .select-sidebar { background: #0b0e11; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 4px; width: 100%; font-size: 13px; outline: none; box-sizing: border-box; margin-bottom: 8px; }
-        
-        #bot-analysis { font-size: 11px; font-weight: bold; padding: 8px; border-radius: 4px; text-align: center; margin-bottom: 5px; background: #000; border: 1px solid #333; }
-        .analyzing { color: var(--accent); border-color: var(--accent) !important; animation: blink 1.5s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        
-        .log-container { flex-grow: 1; background: #000; border-radius: 8px; padding: 15px; font-family: 'Consolas', monospace; font-size: 12px; border: 1px solid #333; overflow-y: hidden; display: flex; flex-direction: column; }
-        .log-entry { padding: 4px 0; border-bottom: 1px solid #111; }
-        button { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        :root { --bg: #06090c; --card: #11171e; --yellow: #f0b90b; --green: #00ff95; --red: #ff3e3e; --blue: #00d4ff; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: #eee; margin: 0; padding: 10px; display: flex; flex-direction: column; gap: 10px; height: 100vh; overflow: hidden; }
+        .top-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex-shrink: 0; }
+        .stat-card { background: var(--card); padding: 10px; border-radius: 8px; border: 1px solid #222; text-align: center; border-bottom: 3px solid #333; }
+        .val { font-size: 18px; font-weight: bold; display: block; }
+        .lab { font-size: 9px; color: #888; text-transform: uppercase; }
+        .main-grid { display: grid; grid-template-columns: 280px 1fr 300px; gap: 10px; flex-grow: 1; min-height: 0; }
+        .panel { background: var(--card); border-radius: 8px; padding: 12px; border: 1px solid #222; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+        .digit-big { font-size: 50px; font-weight: 900; text-align: center; color: var(--yellow); margin: 0; }
+        .btn { padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 11px; }
+        .btn-blue { background: var(--blue); color: #000; }
         .btn-start { background: var(--green); color: #000; }
-        .btn-stop { background: var(--red); color: #fff; margin-top: 5px; }
-        #modal-report { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e2329; border: 2px solid var(--accent); padding: 25px; border-radius: 12px; z-index: 100; text-align: center; box-shadow: 0 0 50px #000; }
+        .btn-strategy { background: #000; color: var(--yellow); border: 1px solid var(--yellow); font-size: 10px; }
+        .btn-reset { background: #333; color: #fff; font-size: 9px; margin-top: auto; }
+        .chart { display: flex; align-items: flex-end; justify-content: space-around; flex-grow: 1; background: #000; padding: 10px; border-radius: 8px; gap: 4px; border: 1px solid #222; }
+        .bar { width: 100%; background: var(--blue); min-height: 2px; transition: height 0.3s; border-radius: 2px; }
+        .log { background: #000; color: #00ff00; font-family: monospace; font-size: 10px; flex-grow: 1; overflow-y: auto; padding: 8px; border-radius: 5px; }
+        input { background: #161a1e; border: 1px solid #333; color: white; padding: 5px; border-radius: 4px; width: 100%; font-size: 12px; }
+        label { font-size: 9px; color: #888; }
+        .full-report { background: var(--card); border: 1px solid #222; border-radius: 8px; padding: 10px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; flex-shrink: 0; }
+        .rep-box { text-align: center; border-right: 1px solid #222; }
+        .rep-box:last-child { border-right: none; }
+        .rep-v { display: block; font-size: 16px; font-weight: bold; color: var(--blue); }
+        .rep-l { display: block; font-size: 9px; color: #888; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<div id="login-screen">
-    <div class="login-box">
-        <div style="font-size: 3rem; margin-bottom: 10px;">🛡️</div>
-        <h2>ÁREA RESTRITA</h2>
-        <input type="text" id="user" class="login-input" placeholder="Usuário">
-        <input type="password" id="pass" class="login-input" placeholder="Senha">
-        <button class="btn-login" onclick="autenticar()">Acessar Painel</button>
-        <p id="login-error" style="color:var(--red); font-size:12px; margin-top:10px; display:none;">Credenciais Inválidas!</p>
-    </div>
+<div class="top-stats">
+    <div class="stat-card"><span class="lab">Banca Real</span><span class="val" id="banca">$ 0.00</span></div>
+    <div class="stat-card"><span class="lab">Stake Próxima</span><span class="val" id="proxima" style="color:var(--yellow)">$ 0.00</span></div>
+    <div class="stat-card"><span class="lab">Lucro Sessão</span><span class="val" id="lucro">$ 0.00</span></div>
+    <div class="stat-card"><span class="lab">Perdas (L)</span><span class="val" id="perdas" style="color:var(--red)">0</span></div>
 </div>
 
-<div id="main-bot">
-    <div class="dashboard">
-        <div class="top-bar">
-            <div>
-                <b style="color:var(--accent)">UNDER 9 PRO</b> 
-                <span id="status-text" style="color:var(--red); font-size:11px; margin-left:10px;">OFFLINE</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div id="timer" style="font-family: monospace; font-size: 14px; color: var(--accent);">00:00:00</div>
-                <input type="password" id="token" placeholder="Token API..." style="background:#2b3139; border:1px solid var(--border); color:#fff; padding:6px; font-size:11px; width:180px;">
-                <button onclick="logout()" style="padding: 5px 10px; font-size: 10px; background: transparent; border: 1px solid var(--red); color: var(--red);">SAIR</button>
-            </div>
+<div class="main-grid">
+    <div class="panel">
+        <div class="digit-big" id="current-digit">-</div>
+        <button class="btn btn-strategy" id="btn-strat" onclick="toggleStrategy()">MODO: ÍMPAR (ODD)</button>
+        <div id="pct" style="text-align:center; font-weight:bold; color:var(--blue); font-size:18px;">0%</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+            <div><label>STAKE</label><input type="number" id="inp-stake" value="0.35"></div>
+            <div><label>FILTRO %</label><input type="number" id="inp-pct" value="60"></div>
+            <div><label>META $</label><input type="number" id="inp-goal" value="1.00"></div>
+            <div><label>STOP $</label><input type="number" id="inp-loss" value="10.00"></div>
         </div>
-
-        <div class="sidebar">
-            <div id="bot-analysis">AGUARDANDO...</div>
-            <div class="stat-box"><span class="stat-label">Saldo Atual</span><div id="balance" class="stat-value">$ 0.00</div></div>
-            
-            <div class="config-box">
-                <label class="stat-label">Mercado</label>
-                <select id="inp-mercado" class="select-sidebar">
-                    <option value="1HZ100V">Volatility 100 (1s)</option>
-                    <option value="1HZ10V">Volatility 10 (1s)</option>
-                    <option value="R_100">Volatility 100</option>
-                    <option value="R_10">Volatility 10</option>
-                </select>
-                
-                <div style="display:flex; gap:5px;">
-                    <div style="flex:1"><label class="stat-label">Stake</label><input type="number" id="inp-stake" class="input-sidebar" value="1.00" step="0.10"></div>
-                    <div style="flex:1"><label class="stat-label">Máx Losses</label><input type="number" id="inp-mart-limit" class="input-sidebar" value="5"></div>
-                </div>
-
-                <div style="display:flex; gap:5px;">
-                    <div style="flex:1"><label class="stat-label">Stop Gain</label><input type="number" id="inp-gain" class="input-sidebar" value="10.00"></div>
-                    <div style="flex:1"><label class="stat-label">Stop Loss</label><input type="number" id="inp-loss" class="input-sidebar" value="30.00"></div>
-                </div>
-            </div>
-
-            <div class="stat-box">
-                <span class="stat-label">Resultado Sessão</span>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div id="lucro" class="stat-value">$ 0.00</div>
-                    <div style="font-size:0.9rem;"><span id="wins" style="color:var(--green)">0</span> W / <span id="losses" style="color:var(--red)">0</span> L</div>
-                </div>
-            </div>
-            
-            <button id="btnStart" class="btn-start" onclick="iniciarBot()">▶ Iniciar Bot</button>
-            <button class="btn-stop" onclick="pararBot('MANUAL')">⏹ Parar Bot</button>
-        </div>
-
-        <div class="main-content">
-            <div class="log-container" id="log"></div>
-            <div id="modal-report">
-                <h2 style="color:var(--accent); margin:0;">RELATÓRIO FINAL</h2>
-                <div id="rep-txt" style="margin:20px 0; font-size:16px;"></div>
-                <button onclick="document.getElementById('modal-report').style.display='none'" style="background:var(--accent); width:100%; color:#000; font-weight:bold;">FECHAR</button>
-            </div>
-        </div>
+        <input type="password" id="inp-token" placeholder="Token API">
+        <button class="btn btn-blue" onclick="conectar()" id="btn-conn">1. CONECTAR</button>
+        <button class="btn btn-start" id="btn-o" onclick="iniciar()" disabled>2. OPERAR</button>
+        <button class="btn btn-reset" onclick="resetTotal()">LIMPAR CACHE</button>
     </div>
+    <div class="panel"><div class="chart" id="chart"></div></div>
+    <div class="panel"><div class="log" id="log-area"></div></div>
+</div>
+
+<div class="full-report">
+    <div class="rep-box"><span class="rep-l">Win Rate</span><span class="rep-v" id="rep-winrate" style="color:var(--green)">0%</span></div>
+    <div class="rep-box"><span class="rep-l">Entradas</span><span class="rep-v" id="rep-total">0</span></div>
+    <div class="rep-box"><span class="rep-l">Fator Lucro</span><span class="rep-v" id="rep-factor">0.00</span></div>
+    <div class="rep-box"><span class="rep-l">Max Loss Seq.</span><span class="rep-v" id="rep-maxloss" style="color:var(--red)">0</span></div>
+    <div class="rep-box"><span class="rep-l">Volume</span><span class="rep-v" id="rep-vol">$ 0.00</span></div>
+    <div class="rep-box"><span class="rep-l">Tempo</span><span class="rep-v" id="rep-time">00:00</span></div>
 </div>
 
 <script>
-    const LOGIN_DATA = { user: "admin", pass: "1234" };
+    let ws = null, operando = false, isProcessing = false;
+    let profit = 0, losses = 0, stake = 0.35, initStake = 0.35;
+    let historico = [], estrategia = "DIGITODD"; 
+    let r_wins = 0, r_total = 0, r_maxLoss = 0, r_curLoss = 0, r_vol = 0, r_brutoWin = 0, r_brutoLoss = 0;
+    let startTime = null, timerInterval = null, aguardandoRecuperacao = false;
 
-    function autenticar() {
-        const u = document.getElementById('user').value;
-        const p = document.getElementById('pass').value;
-        const erro = document.getElementById('login-error');
-        if(u === LOGIN_DATA.user && p === LOGIN_DATA.pass) {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-bot').style.display = 'flex';
-            sessionStorage.setItem('autenticado', 'true');
-        } else {
-            erro.style.display = 'block';
+    function addLog(m, c="#0f0") {
+        const l = document.getElementById('log-area');
+        const div = document.createElement('div');
+        div.style.cssText = `color:${c}; border-bottom:1px solid #111; padding:2px; font-size:10px;`;
+        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${m}`;
+        l.prepend(div);
+        if(l.children.length > 30) l.removeChild(l.lastChild);
+    }
+
+    function toggleStrategy(force = null) {
+        const btn = document.getElementById('btn-strat');
+        estrategia = force || (estrategia === "DIGITODD" ? "DIGITEVEN" : "DIGITODD");
+        btn.innerText = estrategia === "DIGITODD" ? "MODO: ÍMPAR (ODD)" : "MODO: PAR (EVEN)";
+        btn.style.color = estrategia === "DIGITODD" ? "var(--yellow)" : "var(--blue)";
+        btn.style.borderColor = estrategia === "DIGITODD" ? "var(--yellow)" : "var(--blue)";
+    }
+
+    function initChart() {
+        const chart = document.getElementById('chart');
+        chart.innerHTML = '';
+        for(let i=0; i<=9; i++) {
+            chart.innerHTML += `<div style="flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end;">
+                <span id="v-${i}" style="font-size:8px">0%</span>
+                <div id="b-${i}" class="bar"></div>
+                <span style="font-weight:bold; font-size:10px">${i}</span>
+            </div>`;
         }
     }
+    initChart();
 
-    function logout() {
-        sessionStorage.removeItem('autenticado');
-        window.location.reload();
+    function updateReportUI() {
+        const wr = r_total > 0 ? ((r_wins / r_total) * 100).toFixed(1) : 0;
+        const pf = r_brutoLoss > 0 ? (r_brutoWin / r_brutoLoss).toFixed(2) : r_brutoWin.toFixed(2);
+        document.getElementById('rep-winrate').innerText = wr + "%";
+        document.getElementById('rep-total').innerText = r_total;
+        document.getElementById('rep-factor').innerText = pf;
+        document.getElementById('rep-maxloss').innerText = r_maxLoss;
+        document.getElementById('rep-vol').innerText = "$" + r_vol.toFixed(2);
     }
 
-    if(sessionStorage.getItem('autenticado') === 'true') {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-bot').style.display = 'flex';
-    }
-
-    // LÓGICA DO ROBÔ - STAKE INICIAL 1.00
-    let est = { operando: false, lucro: 0, prejuizoAcumulado: 0, wins: 0, losses: 0, stake: 1.00, hist: [], lossConsec: 0, balance: 0, startTime: null, aguardando: false };
-    let ws, timerInterval;
-
-    function runTimer() {
-        est.startTime = new Date();
-        timerInterval = setInterval(() => {
-            let diff = Math.floor((new Date() - est.startTime) / 1000);
-            let h = Math.floor(diff / 3600).toString().padStart(2, '0');
-            let m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-            let s = (diff % 60).toString().padStart(2, '0');
-            document.getElementById('timer').textContent = `${h}:${m}:${s}`;
-        }, 1000);
-    }
-
-    function updateStatus(txt, active = true) {
-        const el = document.getElementById('bot-analysis');
-        el.textContent = txt; el.className = active ? "analyzing" : "";
-    }
-
-    function addLog(msg, color = "#0ecb81") {
-        const log = document.getElementById('log');
-        const entry = document.createElement('div');
-        entry.className = "log-entry"; entry.style.color = color;
-        entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
-        log.prepend(entry);
-        if (log.children.length > 25) log.removeChild(log.lastChild);
-    }
-
-    function atualizarUI() {
-        document.getElementById('lucro').textContent = `$ ${est.lucro.toFixed(2)}`;
-        document.getElementById('balance').textContent = `$ ${est.balance.toFixed(2)}`;
-        document.getElementById('wins').textContent = est.wins;
-        document.getElementById('losses').textContent = est.losses;
-    }
-
-    function iniciarBot() {
-        if(est.operando) return;
-        const t = document.getElementById('token').value.trim();
-        if(!t) return alert("Insira o Token API!");
+    function conectar() {
+        const token = document.getElementById('inp-token').value;
+        if(!token) return alert("Insira o Token");
+        if(ws) ws.close();
         
-        // Captura o stake do input
-        let valorInput = parseFloat(document.getElementById('inp-stake').value);
-        if(valorInput < 0.35) return alert("O Stake não pode ser menor que 0.35!");
-
-        document.getElementById('btnStart').disabled = true;
-        est.stake = valorInput;
-        est.lucro = 0; est.prejuizoAcumulado = 0; est.wins = 0; est.losses = 0; est.lossConsec = 0;
-        runTimer();
-
         ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1089');
-        ws.onopen = () => ws.send(JSON.stringify({ authorize: t }));
         
-        ws.onmessage = (m) => {
-            const data = JSON.parse(m.data);
-            if(data.error) { addLog(data.error.message, "var(--red)"); pararBot("ERRO API"); return; }
-            if(data.authorize) {
-                est.operando = true;
-                est.balance = data.authorize.balance;
-                document.getElementById('status-text').textContent = "ONLINE";
-                document.getElementById('status-text').style.color = "var(--green)";
-                updateStatus("ANALISANDO...");
-                ws.send(JSON.stringify({ ticks: document.getElementById('inp-mercado').value, subscribe: 1 }));
+        ws.onopen = () => {
+            ws.send(JSON.stringify({ authorize: token }));
+            addLog("CONEXÃO ESTÁVEL", "var(--blue)");
+        };
+
+        ws.onmessage = (e) => {
+            const d = JSON.parse(e.data);
+            if(d.error) { 
+                addLog("ERRO: " + d.error.message, "var(--red)");
+                isProcessing = false;
+                return;
+            }
+
+            if(d.msg_type === "authorize") {
+                document.getElementById('btn-o').disabled = false;
+                ws.send(JSON.stringify({ ticks: "1HZ100V", subscribe: 1 }));
                 ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
             }
-            if(data.balance) { est.balance = data.balance.balance; atualizarUI(); }
-            if(data.tick) {
-                const d = parseInt(data.tick.quote.toString().slice(-1));
-                atualizarUI();
-                if(est.operando && !est.aguardando) {
-                    if(est.prejuizoAcumulado === 0) {
-                        if(d === 9) { updateStatus("GATILHO 9!"); comprar(9); }
-                        else { updateStatus("BUSCANDO 9..."); }
-                    } else {
-                        if(d >= 7) { updateStatus("RECUPERANDO..."); comprar(8); }
-                        else { updateStatus("SEGURANÇA..."); }
+
+            if(d.msg_type === "balance") document.getElementById('banca').innerText = `$ ${d.balance.balance.toFixed(2)}`;
+
+            if(d.msg_type === "tick") {
+                const dig = parseInt(d.tick.quote.toString().slice(-1));
+                document.getElementById('current-digit').innerText = dig;
+                historico.push(dig); if(historico.length > 50) historico.shift();
+                
+                const cOdd = historico.filter(n => n % 2 !== 0).length;
+                const cEven = historico.filter(n => n % 2 === 0).length;
+                const pOdd = Math.round((cOdd/historico.length)*100);
+                const pEven = Math.round((cEven/historico.length)*100);
+                const fUser = parseInt(document.getElementById('inp-pct').value);
+
+                // Auto-Switch
+                if(!isProcessing) {
+                    if(estrategia === "DIGITODD" && pEven >= fUser) toggleStrategy("DIGITEVEN");
+                    else if(estrategia === "DIGITEVEN" && pOdd >= fUser) toggleStrategy("DIGITODD");
+                }
+
+                document.getElementById('pct').innerText = `${estrategia === "DIGITODD" ? pOdd : pEven}% ${estrategia.replace("DIGIT","")}`;
+
+                // Atualiza Gráfico
+                for(let i=0; i<=9; i++) {
+                    let p = Math.round((historico.filter(n=>n===i).length/historico.length)*100) || 0;
+                    const bar = document.getElementById(`b-${i}`);
+                    if(bar) {
+                        bar.style.height = (p*4) + "px";
+                        document.getElementById(`v-${i}`).innerText = p + "%";
+                        bar.style.background = ((estrategia === "DIGITODD" && i % 2 !== 0) || (estrategia === "DIGITEVEN" && i % 2 === 0)) ? "var(--green)" : "#333";
                     }
                 }
-            }
-            if(data.proposal_open_contract && data.proposal_open_contract.is_sold) {
-                const p = parseFloat(data.proposal_open_contract.profit);
-                est.lucro += p;
-                if(p > 0) { 
-                    est.wins++; est.lossConsec = 0;
-                    est.prejuizoAcumulado = 0;
-                    est.stake = parseFloat(document.getElementById('inp-stake').value);
-                    addLog(`WIN: +$${p.toFixed(2)}`, "var(--green)");
-                } else {
-                    est.losses++; est.lossConsec++;
-                    est.prejuizoAcumulado += Math.abs(p);
-                    addLog(`LOSS: -$${Math.abs(p).toFixed(2)}`, "var(--red)");
-                    if(est.lossConsec >= parseInt(document.getElementById('inp-mart-limit').value)) return pararBot("LIMITE LOSS");
-                    // Martingale baseado no prejuízo real
-                    est.stake = parseFloat(((est.prejuizoAcumulado / 0.08)).toFixed(2));
+
+                // Compra
+                if(operando && !isProcessing) {
+                    const cPct = (estrategia === "DIGITODD") ? pOdd : pEven;
+                    if(aguardandoRecuperacao) {
+                        if(cPct >= 70) { addLog("RECUPERANDO...", "var(--green)"); aguardandoRecuperacao = false; comprar(); }
+                    } else if(cPct >= fUser) { comprar(); }
                 }
-                setTimeout(() => { 
-                    est.aguardando = false; 
-                    if(est.lucro >= parseFloat(document.getElementById('inp-gain').value)) pararBot("META!");
-                    if(est.lucro <= -parseFloat(document.getElementById('inp-loss').value)) pararBot("STOP!");
-                }, 800);
             }
-            if(data.buy) ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id: data.buy.contract_id, subscribe: 1 }));
+
+            if(d.msg_type === "proposal_open_contract" && d.proposal_open_contract.is_sold) {
+                const c = d.proposal_open_contract;
+                const res = parseFloat(c.profit);
+                const lastD = c.exit_tick_display_value.slice(-1);
+                
+                r_total++; r_vol += parseFloat(c.buy_price);
+                if(res > 0) {
+                    profit += res; r_brutoWin += res; r_wins++; r_curLoss = 0; stake = initStake; 
+                    aguardandoRecuperacao = false; addLog(`WIN ✅ (${lastD})`, "var(--green)");
+                } else {
+                    profit -= Math.abs(res); r_brutoLoss += Math.abs(res); losses++; r_curLoss++;
+                    if(r_curLoss > r_maxLoss) r_maxLoss = r_curLoss;
+                    stake = parseFloat((stake * 1.80).toFixed(2));
+                    addLog(`LOSS ❌ (${lastD})`, "var(--red)");
+                    if(r_curLoss >= 2) { aguardandoRecuperacao = true; addLog("FILTRO 70% ATIVADO", "var(--yellow)"); }
+                }
+
+                document.getElementById('lucro').innerText = `$ ${profit.toFixed(2)}`;
+                document.getElementById('perdas').innerText = losses;
+                document.getElementById('proxima').innerText = `$ ${stake.toFixed(2)}`;
+                updateReportUI();
+
+                const meta = parseFloat(document.getElementById('inp-goal').value);
+                if(profit >= meta) { sessaoFinalizada("META 100%"); }
+                else if(profit >= (meta * 0.7)) { sessaoFinalizada("META 70%"); }
+                else if(profit <= -parseFloat(document.getElementById('inp-loss').value)) { sessaoFinalizada("STOP LOSS"); }
+                else { isProcessing = false; }
+            }
+
+            if(d.msg_type === "buy" && !d.error) {
+                ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id: d.buy.contract_id, subscribe: 1 }));
+            }
         };
+
+        ws.onclose = () => { if(operando) setTimeout(conectar, 2000); };
     }
 
-    function comprar(bar) {
-        if (est.stake > est.balance) { pararBot("SALDO INSUFICIENTE"); return; }
-        est.aguardando = true;
-        const s = parseFloat(est.stake.toFixed(2));
-        ws.send(JSON.stringify({ buy: 1, price: s, parameters: { amount: s, basis: "stake", contract_type: "DIGITUNDER", currency: "USD", duration: 1, duration_unit: "t", barrier: bar.toString(), symbol: document.getElementById('inp-mercado').value } }));
+    function comprar() {
+        if(!ws || ws.readyState !== 1) return;
+        isProcessing = true;
+        ws.send(JSON.stringify({buy: 1, price: stake, parameters: {amount: stake, basis: "stake", contract_type: estrategia, currency: "USD", duration: 1, duration_unit: "t", symbol: "1HZ100V"}}));
     }
 
-    function pararBot(msg) {
-        est.operando = false; clearInterval(timerInterval); if(ws) ws.close();
-        document.getElementById('status-text').textContent = "OFFLINE";
-        document.getElementById('status-text').style.color = "var(--red)";
-        document.getElementById('btnStart').disabled = false;
-        updateStatus("PARADO", false);
-        document.getElementById('rep-txt').innerHTML = `Motivo: ${msg}<br>Resultado: $${est.lucro.toFixed(2)}<br>Tempo: ${document.getElementById('timer').textContent}`;
-        document.getElementById('modal-report').style.display = 'block';
+    function iniciar() {
+        operando = !operando;
+        if(operando) {
+            initStake = parseFloat(document.getElementById('inp-stake').value);
+            stake = stake || initStake;
+            if(!startTime) { startTime = new Date(); timerInterval = setInterval(() => {
+                const diff = new Date(new Date() - startTime);
+                document.getElementById('rep-time').innerText = diff.getUTCMinutes().toString().padStart(2,'0') + ":" + diff.getUTCSeconds().toString().padStart(2,'0');
+            }, 1000); }
+            addLog("BOT RODANDO", "var(--green)");
+        }
+        document.getElementById('btn-o').innerText = operando ? "PARAR" : "OPERAR";
+        document.getElementById('btn-o').style.background = operando ? "var(--red)" : "var(--green)";
+    }
+
+    function sessaoFinalizada(m) {
+        operando = false; isProcessing = true;
+        clearInterval(timerInterval);
+        document.getElementById('btn-o').innerText = "OPERAR";
+        document.getElementById('btn-o').style.background = "var(--green)";
+        addLog(m, "var(--yellow)");
+        alert(m);
+    }
+
+    function resetTotal() {
+        historico = []; profit = 0; losses = 0; r_total = 0; r_wins = 0; r_vol = 0; r_maxLoss = 0;
+        document.getElementById('log-area').innerHTML = '';
+        addLog("MEMÓRIA LIMPA", "#fff");
+        updateReportUI();
     }
 </script>
 </body>
