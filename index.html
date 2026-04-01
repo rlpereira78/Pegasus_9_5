@@ -7,6 +7,22 @@
         :root { --bg: #06090c; --card: #11171e; --yellow: #f0b90b; --green: #00ff95; --red: #ff3e3e; --blue: #00d4ff; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); color: #eee; margin: 0; padding: 10px; display: flex; flex-direction: column; gap: 10px; height: 100vh; overflow: hidden; }
+        
+        /* --- ESTILOS DO LOGIN (ADICIONADOS) --- */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .login-box {
+            background: var(--card); padding: 30px; border-radius: 10px; border: 1px solid #222;
+            width: 320px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .login-box h2 { color: var(--yellow); margin-bottom: 20px; font-size: 18px; letter-spacing: 1px; }
+        .login-box input { margin-bottom: 15px; padding: 12px; border: 1px solid #333; background: #000; color: #fff; width: 100%; border-radius: 5px; }
+        .btn-login { background: var(--green); color: #000; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 5px; text-transform: uppercase; }
+        #main-app { display: none; flex-direction: column; gap: 10px; height: 100%; width: 100%; }
+        /* --- FIM ESTILOS LOGIN --- */
+
         .top-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex-shrink: 0; }
         .stat-card { background: var(--card); padding: 10px; border-radius: 8px; border: 1px solid #222; text-align: center; border-bottom: 3px solid #333; }
         .val { font-size: 18px; font-weight: bold; display: block; }
@@ -33,43 +49,73 @@
 </head>
 <body>
 
-<div class="top-stats">
-    <div class="stat-card"><span class="lab">Banca Real</span><span class="val" id="banca">$ 0.00</span></div>
-    <div class="stat-card"><span class="lab">Stake Próxima</span><span class="val" id="proxima" style="color:var(--yellow)">$ 0.00</span></div>
-    <div class="stat-card"><span class="lab">Lucro Sessão</span><span class="val" id="lucro">$ 0.00</span></div>
-    <div class="stat-card"><span class="lab">Perdas (L)</span><span class="val" id="perdas" style="color:var(--red)">0</span></div>
-</div>
-
-<div class="main-grid">
-    <div class="panel">
-        <div class="digit-big" id="current-digit">-</div>
-        <button class="btn btn-strategy" id="btn-strat" onclick="toggleStrategy()">MODO: ÍMPAR (ODD)</button>
-        <div id="pct" style="text-align:center; font-weight:bold; color:var(--blue); font-size:18px;">0%</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-            <div><label>STAKE</label><input type="number" id="inp-stake" value="0.35"></div>
-            <div><label>FILTRO %</label><input type="number" id="inp-pct" value="60"></div>
-            <div><label>META $</label><input type="number" id="inp-goal" value="1.00"></div>
-            <div><label>STOP $</label><input type="number" id="inp-loss" value="10.00"></div>
-        </div>
-        <input type="password" id="inp-token" placeholder="Token API">
-        <button class="btn btn-blue" onclick="conectar()" id="btn-conn">1. CONECTAR</button>
-        <button class="btn btn-start" id="btn-o" onclick="iniciar()" disabled>2. OPERAR</button>
-        <button class="btn btn-reset" onclick="resetTotal()">LIMPAR CACHE</button>
+<div id="login-screen">
+    <div class="login-box">
+        <h2>SISTEMA SAFEGUARD</h2>
+        <input type="text" id="user-access" placeholder="Usuário">
+        <input type="password" id="pass-access" placeholder="Senha">
+        <button class="btn-login" onclick="validateAccess()">Acessar Painel</button>
+        <p id="error-msg" style="color:var(--red); font-size:11px; margin-top:10px; display:none;">Credenciais Inválidas!</p>
     </div>
-    <div class="panel"><div class="chart" id="chart"></div></div>
-    <div class="panel"><div class="log" id="log-area"></div></div>
 </div>
 
-<div class="full-report">
-    <div class="rep-box"><span class="rep-l">Win Rate</span><span class="rep-v" id="rep-winrate" style="color:var(--green)">0%</span></div>
-    <div class="rep-box"><span class="rep-l">Entradas</span><span class="rep-v" id="rep-total">0</span></div>
-    <div class="rep-box"><span class="rep-l">Fator Lucro</span><span class="rep-v" id="rep-factor">0.00</span></div>
-    <div class="rep-box"><span class="rep-l">Max Loss Seq.</span><span class="rep-v" id="rep-maxloss" style="color:var(--red)">0</span></div>
-    <div class="rep-box"><span class="rep-l">Volume</span><span class="rep-v" id="rep-vol">$ 0.00</span></div>
-    <div class="rep-box"><span class="rep-l">Tempo</span><span class="rep-v" id="rep-time">00:00</span></div>
+<div id="main-app">
+    <div class="top-stats">
+        <div class="stat-card"><span class="lab">Banca Real</span><span class="val" id="banca">$ 0.00</span></div>
+        <div class="stat-card"><span class="lab">Stake Próxima</span><span class="val" id="proxima" style="color:var(--yellow)">$ 0.00</span></div>
+        <div class="stat-card"><span class="lab">Lucro Sessão</span><span class="val" id="lucro">$ 0.00</span></div>
+        <div class="stat-card"><span class="lab">Perdas (L)</span><span class="val" id="perdas" style="color:var(--red)">0</span></div>
+    </div>
+
+    <div class="main-grid">
+        <div class="panel">
+            <div class="digit-big" id="current-digit">-</div>
+            <button class="btn btn-strategy" id="btn-strat" onclick="toggleStrategy()">MODO: ÍMPAR (ODD)</button>
+            <div id="pct" style="text-align:center; font-weight:bold; color:var(--blue); font-size:18px;">0%</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                <div><label>STAKE</label><input type="number" id="inp-stake" value="0.35"></div>
+                <div><label>FILTRO %</label><input type="number" id="inp-pct" value="60"></div>
+                <div><label>META $</label><input type="number" id="inp-goal" value="1.00"></div>
+                <div><label>STOP $</label><input type="number" id="inp-loss" value="10.00"></div>
+            </div>
+            <input type="password" id="inp-token" placeholder="Token API">
+            <button class="btn btn-blue" onclick="conectar()" id="btn-conn">1. CONECTAR</button>
+            <button class="btn btn-start" id="btn-o" onclick="iniciar()" disabled>2. OPERAR</button>
+            <button class="btn btn-reset" onclick="resetTotal()">LIMPAR CACHE</button>
+        </div>
+        <div class="panel"><div class="chart" id="chart"></div></div>
+        <div class="panel"><div class="log" id="log-area"></div></div>
+    </div>
+
+    <div class="full-report">
+        <div class="rep-box"><span class="rep-l">Win Rate</span><span class="rep-v" id="rep-winrate" style="color:var(--green)">0%</span></div>
+        <div class="rep-box"><span class="rep-l">Entradas</span><span class="rep-v" id="rep-total">0</span></div>
+        <div class="rep-box"><span class="rep-l">Fator Lucro</span><span class="rep-v" id="rep-factor">0.00</span></div>
+        <div class="rep-box"><span class="rep-l">Max Loss Seq.</span><span class="rep-v" id="rep-maxloss" style="color:var(--red)">0</span></div>
+        <div class="rep-box"><span class="rep-l">Volume</span><span class="rep-v" id="rep-vol">$ 0.00</span></div>
+        <div class="rep-box"><span class="rep-l">Tempo</span><span class="rep-v" id="rep-time">00:00</span></div>
+    </div>
 </div>
 
 <script>
+    // --- FUNÇÃO DE LOGIN (ADICIONADA) ---
+    function validateAccess() {
+        const u = document.getElementById('user-access').value;
+        const p = document.getElementById('pass-access').value;
+        const err = document.getElementById('error-msg');
+
+        // USUÁRIO: admin | SENHA: 123
+        if(u === "admin" && p === "123") {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            addLog("SISTEMA DESBLOQUEADO", "var(--blue)");
+        } else {
+            err.style.display = 'block';
+            setTimeout(() => err.style.display = 'none', 2000);
+        }
+    }
+
+    // --- SEU SCRIPT ORIGINAL ABAIXO ---
     let ws = null, operando = false, isProcessing = false;
     let profit = 0, losses = 0, stake = 0.35, initStake = 0.35;
     let historico = [], estrategia = "DIGITODD"; 
@@ -78,6 +124,7 @@
 
     function addLog(m, c="#0f0") {
         const l = document.getElementById('log-area');
+        if(!l) return;
         const div = document.createElement('div');
         div.style.cssText = `color:${c}; border-bottom:1px solid #111; padding:2px; font-size:10px;`;
         div.innerHTML = `[${new Date().toLocaleTimeString()}] ${m}`;
@@ -155,7 +202,6 @@
                 const pEven = Math.round((cEven/historico.length)*100);
                 const fUser = parseInt(document.getElementById('inp-pct').value);
 
-                // Auto-Switch
                 if(!isProcessing) {
                     if(estrategia === "DIGITODD" && pEven >= fUser) toggleStrategy("DIGITEVEN");
                     else if(estrategia === "DIGITEVEN" && pOdd >= fUser) toggleStrategy("DIGITODD");
@@ -163,7 +209,6 @@
 
                 document.getElementById('pct').innerText = `${estrategia === "DIGITODD" ? pOdd : pEven}% ${estrategia.replace("DIGIT","")}`;
 
-                // Atualiza Gráfico
                 for(let i=0; i<=9; i++) {
                     let p = Math.round((historico.filter(n=>n===i).length/historico.length)*100) || 0;
                     const bar = document.getElementById(`b-${i}`);
@@ -174,7 +219,6 @@
                     }
                 }
 
-                // Compra
                 if(operando && !isProcessing) {
                     const cPct = (estrategia === "DIGITODD") ? pOdd : pEven;
                     if(aguardandoRecuperacao) {
