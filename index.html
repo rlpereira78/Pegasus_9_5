@@ -3,117 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deriv Bot - Anti-Block System</title>
+    <title>Bot Deriv - GitHub Edition</title>
     <style>
-        :root { --bg: #0e0e0e; --panel: #161616; --accent: #00bcd4; --win: #4caf50; --loss: #f44336; --text: #e0e0e0; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { max-width: 900px; width: 100%; display: none; }
-        .panel { background: var(--panel); border: 1px solid #333; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        :root { --bg: #0e0e0e; --accent: #00bcd4; --win: #4caf50; --loss: #f44336; --text: #e0e0e0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .container { max-width: 800px; width: 100%; }
+        .panel { background: #1a1a1a; border: 1px solid #333; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
         
-        /* Tela de Autenticação */
-        #auth-screen { text-align: center; margin-top: 100px; }
-        .btn-auth { background: var(--accent); color: #000; padding: 15px 30px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-auth { background: var(--accent); color: #000; font-size: 16px; }
+        .btn-start { background: var(--win); color: #fff; width: 100%; margin-top: 10px; }
+        .btn-stop { background: var(--loss); color: #fff; width: 100%; display: none; }
         
-        /* Dashboard */
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
-        .card { background: #222; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #333; }
-        .card span { display: block; font-size: 11px; color: #888; margin-bottom: 5px; }
-        .card strong { font-size: 20px; }
-
-        /* Inputs */
-        .input-group { margin-bottom: 15px; }
-        input, select { width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+        .card { background: #252525; padding: 10px; border-radius: 4px; border: 1px solid #444; }
+        .card small { display: block; font-size: 10px; color: #888; }
         
-        .btn-start { background: var(--win); color: white; width: 100%; padding: 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .btn-stop { background: var(--loss); color: white; width: 100%; padding: 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; display: none; }
-        
-        .log-box { height: 250px; overflow-y: auto; background: #000; padding: 15px; font-family: monospace; font-size: 12px; border-radius: 4px; border: 1px solid #333; }
-        .log-win { color: var(--win); }
-        .log-loss { color: var(--loss); }
-        .log-info { color: var(--accent); }
+        .log-box { height: 200px; overflow-y: auto; background: #000; padding: 10px; font-family: monospace; font-size: 12px; text-align: left; border: 1px solid #333; }
+        .hidden { display: none !important; }
+        .win { color: var(--win); }
+        .loss { color: var(--loss); }
     </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
-<div id="auth-screen">
-    <div class="panel" style="max-width: 400px; margin: auto;">
-        <h2 style="color: var(--accent)">CONEXÃO SEGURA</h2>
-        <p>Clique abaixo para autenticar na Deriv e retornar.</p>
-        <select id="acc-type" style="margin-bottom: 20px;">
-            <option value="demo">CONTA DEMO (VIRTUAL)</option>
-            <option value="real">CONTA REAL</option>
-        </select>
-        <button class="btn-auth" onclick="login()">AUTENTICAR E OPERAR</button>
-    </div>
-</div>
-
-<!-- INTERFACE DO BOT -->
-<div class="container" id="main-ui">
-    <div class="panel">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 id="display-mode">BOT ONLINE</h2>
-            <button onclick="logout()" style="background: #333; color: #ccc; border: none; padding: 5px 10px; cursor: pointer;">SAIR</button>
-        </div>
-        
-        <div class="grid">
-            <div class="card"><span>SALDO</span><strong id="val-balance">$ 0.00</strong></div>
-            <div class="card"><span>LUCRO</span><strong id="val-profit">$ 0.00</strong></div>
-            <div class="card"><span>WINS</span><strong id="val-wins" style="color:var(--win)">0</strong></div>
-            <div class="card"><span>LOSS</span><strong id="val-loss" style="color:var(--loss)">0</strong></div>
-        </div>
+<div class="container">
+    <!-- TELA 1: AUTENTICAÇÃO -->
+    <div id="screen-auth" class="panel">
+        <h2 style="color: var(--accent)">Autenticação Necessária</h2>
+        <p>Clique abaixo para logar na Deriv. Você voltará automaticamente para cá.</p>
+        <button class="btn btn-auth" onclick="login()">LOGAR COM DERIV</button>
     </div>
 
-    <div class="panel">
-        <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
-            <div class="input-group"><label>Stake</label><input type="number" id="stake" value="0.35"></div>
-            <div class="input-group"><label>Meta</label><input type="number" id="tp" value="5.00"></div>
-            <div class="input-group"><label>Stop</label><input type="number" id="sl" value="10.00"></div>
+    <!-- TELA 2: OPERAÇÃO -->
+    <div id="screen-bot" class="container hidden">
+        <div class="panel">
+            <h2 id="mode-text">Bot Conectado</h2>
+            <div class="stats">
+                <div class="card"><small>SALDO</small><strong id="ui-balance">$ 0.00</strong></div>
+                <div class="card"><small>LUCRO</small><strong id="ui-profit">$ 0.00</strong></div>
+                <div class="card"><small>WINS</small><strong class="win" id="ui-wins">0</strong></div>
+                <div class="card"><small>LOSS</small><strong class="loss" id="ui-loss">0</strong></div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                <input type="number" id="stake" value="0.35" placeholder="Stake">
+                <input type="number" id="tp" value="5.00" placeholder="Meta">
+            </div>
+            
+            <button id="btn-start" class="btn btn-start" onclick="startTrading()">INICIAR BOT (ONLY DOWNS)</button>
+            <button id="btn-stop" class="btn btn-stop" onclick="stopTrading()">PARAR BOT</button>
+            <button onclick="logout()" style="background:none; border:none; color:#666; cursor:pointer; margin-top:15px;">Sair da Conta</button>
         </div>
-        <button class="btn-start" id="btn-start" onclick="startBot()">INICIAR ONLY DOWNS</button>
-        <button class="btn-stop" id="btn-stop" onclick="stopBot()">PARAR BOT</button>
-    </div>
 
-    <div class="log-box" id="logs">
-        <div>Aguardando início...</div>
+        <div class="log-box" id="logs"></div>
     </div>
 </div>
 
 <script>
-    // CONFIGURAÇÃO CRÍTICA
-    const MY_APP_ID = 1089; // TROQUE PELO SEU APP ID PARA EVITAR BLOQUEIO
-    
-    let socket = null, token = null, isRunning = false, trading = false;
-    let balance = 0, profit = 0, wins = 0, loss = 0, stake = 0, initialStake = 0;
+    // 1. CONFIGURAÇÃO (USE SEU APP_ID AQUI)
+    const APP_ID = 1089; 
+    const REDIRECT_URL = window.location.origin + window.location.pathname;
 
-    // 1. INICIALIZAÇÃO E TRATAMENTO DE URL (ANTI-UNUSUAL ACTIVITY)
-    function init() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token1 = urlParams.get('token1');
+    let ws, token, isRunning = false, isWaiting = false;
+    let balance = 0, profit = 0, wins = 0, losses = 0, currentStake = 0;
 
-        if (token1) {
-            localStorage.setItem('deriv_token', token1);
-            // Redireciona para URL limpa para resetar o estado do navegador e evitar bloqueio
-            window.location.href = window.location.pathname;
-            return;
-        }
+    // 2. LÓGICA DE REDIRECIONAMENTO
+    function checkReturn() {
+        const params = new URLSearchParams(window.location.search);
+        const tokenFromUrl = params.get('token1');
 
-        const savedToken = localStorage.getItem('deriv_token');
-        if (savedToken) {
-            token = savedToken;
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-ui').style.display = 'block';
-            const isDemo = token.toLowerCase().startsWith('d');
-            document.getElementById('display-mode').innerText = isDemo ? "MODO VIRTUAL" : "MODO REAL";
-            document.getElementById('display-mode').style.color = isDemo ? "#ff9800" : "#4caf50";
+        if (tokenFromUrl) {
+            localStorage.setItem('deriv_token', tokenFromUrl);
+            // Limpa a URL (remove o token da barra de endereço)
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showBotInterface();
+        } else if (localStorage.getItem('deriv_token')) {
+            showBotInterface();
         }
     }
 
-    // 2. LOGIN E LOGOUT
     function login() {
-        const redirect = window.location.href;
-        localStorage.removeItem('deriv_token');
-        window.location.href = `https://oauth.deriv.com/oauth2/authorize?app_id=${MY_APP_ID}&l=pt&redirect_uri=${redirect}`;
+        // Redireciona para a Deriv
+        const authUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=pt&redirect_uri=${REDIRECT_URL}`;
+        window.location.href = authUrl;
     }
 
     function logout() {
@@ -121,71 +94,63 @@
         location.reload();
     }
 
-    // 3. CONEXÃO WEBSOCKET COM DELAY DE SEGURANÇA
-    function startBot() {
-        if (isRunning) return;
-        
-        initialStake = parseFloat(document.getElementById('stake').value);
-        stake = initialStake;
-        isRunning = true;
-        
-        document.getElementById('btn-start').style.display = 'none';
-        document.getElementById('btn-stop').style.display = 'block';
-        
-        addLog("Estabelecendo conexão segura com delay...", "info");
-
-        // Delay de 2 segundos antes de abrir o socket para evitar o erro de 'Atividade Incomum'
-        setTimeout(() => {
-            socket = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${MY_APP_ID}`);
-            
-            socket.onopen = () => {
-                socket.send(JSON.stringify({ authorize: token }));
-            };
-
-            socket.onmessage = (msg) => {
-                const data = JSON.parse(msg.data);
-
-                if (data.error) {
-                    addLog("ERRO: " + data.error.message, "loss");
-                    stopBot();
-                    return;
-                }
-
-                if (data.msg_type === 'authorize') {
-                    addLog("Autenticado! Iniciando DTrader...", "win");
-                    socket.send(JSON.stringify({ balance: 1, subscribe: 1 }));
-                    socket.send(JSON.stringify({ ticks: "R_100", subscribe: 1 }));
-                }
-
-                if (data.msg_type === 'balance') {
-                    document.getElementById('val-balance').innerText = `$ ${data.balance.balance.toFixed(2)}`;
-                }
-
-                if (data.msg_type === 'tick' && isRunning && !trading) {
-                    handleStrategy();
-                }
-
-                if (data.msg_type === 'buy') {
-                    trading = true;
-                    addLog("Ordem enviada: Queda (2 Tiques)", "info");
-                    socket.send(JSON.stringify({ proposal_open_contract: 1, contract_id: data.buy.contract_id, subscribe: 1 }));
-                }
-
-                if (data.msg_type === 'proposal_open_contract' && data.proposal_open_contract.is_sold) {
-                    checkResult(data.proposal_open_contract);
-                }
-            };
-        }, 2000);
+    function showBotInterface() {
+        token = localStorage.getItem('deriv_token');
+        document.getElementById('screen-auth').classList.add('hidden');
+        document.getElementById('screen-bot').classList.remove('hidden');
+        const isDemo = token.toLowerCase().startsWith('d');
+        document.getElementById('mode-text').innerText = isDemo ? "CONTA VIRTUAL" : "CONTA REAL";
+        document.getElementById('mode-text').style.color = isDemo ? "#ff9800" : "#4caf50";
     }
 
-    // 4. ESTRATÉGIA ONLY DOWNS (DTRADER)
-    function handleStrategy() {
-        // Envia a ordem direto para o servidor
-        socket.send(JSON.stringify({
+    // 3. CONEXÃO E TRADE
+    function startTrading() {
+        currentStake = parseFloat(document.getElementById('stake').value);
+        isRunning = true;
+        document.getElementById('btn-start').style.display = 'none';
+        document.getElementById('btn-stop').style.display = 'block';
+
+        ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`);
+
+        ws.onopen = () => {
+            ws.send(JSON.stringify({ authorize: token }));
+        };
+
+        ws.onmessage = (msg) => {
+            const data = JSON.parse(msg.data);
+
+            if (data.msg_type === 'authorize') {
+                addLog("Conectado com sucesso!", "win");
+                ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+                ws.send(JSON.stringify({ ticks: "R_100", subscribe: 1 }));
+            }
+
+            if (data.msg_type === 'balance') {
+                document.getElementById('ui-balance').innerText = `$ ${data.balance.balance.toFixed(2)}`;
+            }
+
+            if (data.msg_type === 'tick' && isRunning && !isWaiting) {
+                executeOrder();
+            }
+
+            if (data.msg_type === 'buy') {
+                isWaiting = true;
+                ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id: data.buy.contract_id, subscribe: 1 }));
+            }
+
+            if (data.msg_type === 'proposal_open_contract' && data.proposal_open_contract.is_sold) {
+                handleResult(data.proposal_open_contract);
+            }
+        };
+    }
+
+    function executeOrder() {
+        isWaiting = true;
+        ws.send(JSON.stringify({
             buy: 1,
-            price: stake,
+            price: currentStake,
             parameters: {
-                amount: stake,
+                amount: currentStake,
                 basis: "stake",
                 contract_type: "RUNLOW",
                 currency: "USD",
@@ -194,58 +159,49 @@
                 symbol: "R_100"
             }
         }));
-        trading = true; // Trava para não abrir várias ordens
     }
 
-    function checkResult(contract) {
-        const p = contract.profit;
+    function handleResult(c) {
+        const p = c.profit;
         profit += p;
-
+        
         if (p > 0) {
             wins++;
-            stake = initialStake;
+            currentStake = parseFloat(document.getElementById('stake').value);
             addLog(`WIN: +$${p.toFixed(2)}`, "win");
         } else {
-            loss++;
-            stake *= 2.1; // Martingale
-            addLog(`LOSS: $${p.toFixed(2)}`, "loss");
+            losses++;
+            currentStake *= 2.1;
+            addLog(`LOSS: -$${Math.abs(p).toFixed(2)}`, "loss");
         }
 
-        document.getElementById('val-profit').innerText = `$ ${profit.toFixed(2)}`;
-        document.getElementById('val-wins').innerText = wins;
-        document.getElementById('val-loss').innerText = loss;
-        document.getElementById('val-profit').style.color = profit >= 0 ? "var(--win)" : "var(--loss)";
-
-        // Trava de Meta/Stop
-        if (profit >= parseFloat(document.getElementById('tp').value)) {
-            addLog("META ATINGIDA!", "win");
-            stopBot();
-        } else if (profit <= (parseFloat(document.getElementById('sl').value) * -1)) {
-            addLog("STOP LOSS ATINGIDO!", "loss");
-            stopBot();
-        } else {
-            // Delay de respiro para o servidor antes da próxima ordem
-            setTimeout(() => { trading = false; }, 1500);
-        }
+        updateStats();
+        
+        // Pequena pausa para evitar o erro de "Unusual Activity" entre as ordens
+        setTimeout(() => { isWaiting = false; }, 2000);
     }
 
-    function stopBot() {
+    function updateStats() {
+        document.getElementById('ui-profit').innerText = `$ ${profit.toFixed(2)}`;
+        document.getElementById('ui-wins').innerText = wins;
+        document.getElementById('ui-loss').innerText = losses;
+    }
+
+    function stopTrading() {
         isRunning = false;
-        trading = false;
-        if (socket) socket.close();
+        if(ws) ws.close();
         document.getElementById('btn-start').style.display = 'block';
         document.getElementById('btn-stop').style.display = 'none';
-        addLog("Bot parado.", "info");
+        addLog("Bot parado.", "");
     }
 
-    function addLog(msg, type) {
-        const box = document.getElementById('logs');
-        const time = new Date().toLocaleTimeString();
-        box.innerHTML += `<div class="log-${type}">[${time}] ${msg}</div>`;
-        box.scrollTop = box.scrollHeight;
+    function addLog(m, cl) {
+        const b = document.getElementById('logs');
+        b.innerHTML += `<div class="${cl}">[${new Date().toLocaleTimeString()}] ${m}</div>`;
+        b.scrollTop = b.scrollHeight;
     }
 
-    init();
+    checkReturn();
 </script>
 </body>
 </html>
