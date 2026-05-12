@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Deriv - GitHub Edition</title>
+    <title>Bot Pegasus 9.5 - Deriv Edition</title>
     <style>
         :root { --bg: #0e0e0e; --accent: #00bcd4; --win: #4caf50; --loss: #f44336; --text: #e0e0e0; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; }
@@ -19,10 +19,13 @@
         .card { background: #252525; padding: 10px; border-radius: 4px; border: 1px solid #444; }
         .card small { display: block; font-size: 10px; color: #888; }
         
-        .log-box { height: 200px; overflow-y: auto; background: #000; padding: 10px; font-family: monospace; font-size: 12px; text-align: left; border: 1px solid #333; }
+        input[type="number"] { background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px; width: 80%; }
+        
+        .log-box { height: 250px; overflow-y: auto; background: #000; padding: 15px; font-family: 'Courier New', monospace; font-size: 12px; text-align: left; border: 1px solid #333; border-radius: 4px; }
         .hidden { display: none !important; }
         .win { color: var(--win); }
         .loss { color: var(--loss); }
+        .info { color: var(--accent); }
     </style>
 </head>
 <body>
@@ -30,15 +33,15 @@
 <div class="container">
     <!-- TELA 1: AUTENTICAÇÃO -->
     <div id="screen-auth" class="panel">
-        <h2 style="color: var(--accent)">Autenticação Necessária</h2>
-        <p>Clique abaixo para logar na Deriv. Você voltará automaticamente para cá.</p>
-        <button class="btn btn-auth" onclick="login()">LOGAR COM DERIV</button>
+        <h2 style="color: var(--accent)">Pegasus 9.5</h2>
+        <p>Autenticação necessária para acessar o mercado.</p>
+        <button id="btn-login" class="btn btn-auth">LOGAR COM DERIV</button>
     </div>
 
     <!-- TELA 2: OPERAÇÃO -->
     <div id="screen-bot" class="container hidden">
         <div class="panel">
-            <h2 id="mode-text">Bot Conectado</h2>
+            <h2 id="mode-text">Conectado</h2>
             <div class="stats">
                 <div class="card"><small>SALDO</small><strong id="ui-balance">$ 0.00</strong></div>
                 <div class="card"><small>LUCRO</small><strong id="ui-profit">$ 0.00</strong></div>
@@ -47,13 +50,20 @@
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                <input type="number" id="stake" value="0.35" placeholder="Stake">
-                <input type="number" id="tp" value="5.00" placeholder="Meta">
+                <div>
+                    <small>Stake Inicial ($)</small><br>
+                    <input type="number" id="stake" value="0.35" step="0.01">
+                </div>
+                <div>
+                    <small>Meta de Lucro ($)</small><br>
+                    <input type="number" id="tp" value="5.00" step="0.01">
+                </div>
             </div>
             
-            <button id="btn-start" class="btn btn-start" onclick="startTrading()">INICIAR BOT (ONLY DOWNS)</button>
-            <button id="btn-stop" class="btn btn-stop" onclick="stopTrading()">PARAR BOT</button>
-            <button onclick="logout()" style="background:none; border:none; color:#666; cursor:pointer; margin-top:15px;">Sair da Conta</button>
+            <button id="btn-start" class="btn btn-start">INICIAR BOT (ONLY DOWNS)</button>
+            <button id="btn-stop" class="btn btn-stop">PARAR BOT</button>
+            <br>
+            <button id="btn-logout" style="background:none; border:none; color:#666; cursor:pointer; margin-top:15px;">Sair da Conta</button>
         </div>
 
         <div class="log-box" id="logs"></div>
@@ -61,30 +71,20 @@
 </div>
 
 <script>
-    // 1. CONFIGURAÇÃO (USE SEU APP_ID AQUI)
+    /**
+     * CONFIGURAÇÕES GERAIS
+     */
     const APP_ID = 1089; 
-    const REDIRECT_URL = "https://github.com/rlpereira78/Pegasus_9_5";
+    const REDIRECT_URL = https://rlpereira78.github.io/Pegasus_9_5/; // Pega a URL atual sem parâmetros
 
     let ws, token, isRunning = false, isWaiting = false;
     let balance = 0, profit = 0, wins = 0, losses = 0, currentStake = 0;
+    let initialStake = 0, takeProfit = 0;
 
-    // 2. LÓGICA DE REDIRECIONAMENTO
-    function checkReturn() {
-        const params = new URLSearchParams(window.location.search);
-        const tokenFromUrl = params.get('token1');
-
-        if (tokenFromUrl) {
-            localStorage.setItem('deriv_token', tokenFromUrl);
-            // Limpa a URL (remove o token da barra de endereço)
-            window.history.replaceState({}, document.title, window.location.pathname);
-            showBotInterface();
-        } else if (localStorage.getItem('deriv_token')) {
-            showBotInterface();
-        }
-    }
-
+    /**
+     * FUNÇÕES DE AUTENTICAÇÃO (Escopo Global)
+     */
     function login() {
-        // Redireciona para a Deriv
         const authUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=pt&redirect_uri=${REDIRECT_URL}`;
         window.location.href = authUrl;
     }
@@ -94,19 +94,41 @@
         location.reload();
     }
 
+    function checkReturn() {
+        const params = new URLSearchParams(window.location.search);
+        const tokenFromUrl = params.get('token1');
+
+        if (tokenFromUrl) {
+            localStorage.setItem('deriv_token', tokenFromUrl);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showBotInterface();
+        } else if (localStorage.getItem('deriv_token')) {
+            showBotInterface();
+        }
+    }
+
     function showBotInterface() {
         token = localStorage.getItem('deriv_token');
         document.getElementById('screen-auth').classList.add('hidden');
         document.getElementById('screen-bot').classList.remove('hidden');
+        
         const isDemo = token.toLowerCase().startsWith('d');
-        document.getElementById('mode-text').innerText = isDemo ? "CONTA VIRTUAL" : "CONTA REAL";
-        document.getElementById('mode-text').style.color = isDemo ? "#ff9800" : "#4caf50";
+        const modeLabel = document.getElementById('mode-text');
+        modeLabel.innerText = isDemo ? "CONTA VIRTUAL" : "CONTA REAL";
+        modeLabel.style.color = isDemo ? "#ff9800" : "#4caf50";
     }
 
-    // 3. CONEXÃO E TRADE
+    /**
+     * LÓGICA DO BOT
+     */
     function startTrading() {
-        currentStake = parseFloat(document.getElementById('stake').value);
+        initialStake = parseFloat(document.getElementById('stake').value);
+        takeProfit = parseFloat(document.getElementById('tp').value);
+        currentStake = initialStake;
+        
         isRunning = true;
+        isWaiting = false;
+
         document.getElementById('btn-start').style.display = 'none';
         document.getElementById('btn-stop').style.display = 'block';
 
@@ -120,26 +142,32 @@
             const data = JSON.parse(msg.data);
 
             if (data.msg_type === 'authorize') {
-                addLog("Conectado com sucesso!", "win");
+                addLog("Conexão estabelecida!", "info");
                 ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
-                ws.send(JSON.stringify({ ticks: "R_100", subscribe: 1 }));
             }
 
             if (data.msg_type === 'balance') {
                 document.getElementById('ui-balance').innerText = `$ ${data.balance.balance.toFixed(2)}`;
             }
 
-            if (data.msg_type === 'tick' && isRunning && !isWaiting) {
-                executeOrder();
+            // Lógica de entrada baseada em tick
+            if (data.msg_type === 'tick' || data.msg_type === 'authorize') {
+                if (isRunning && !isWaiting) {
+                    executeOrder();
+                }
             }
 
             if (data.msg_type === 'buy') {
-                isWaiting = true;
-                ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id: data.buy.contract_id, subscribe: 1 }));
+                addLog(`Ordem enviada: $${currentStake.toFixed(2)}`, "");
             }
 
             if (data.msg_type === 'proposal_open_contract' && data.proposal_open_contract.is_sold) {
                 handleResult(data.proposal_open_contract);
+            }
+            
+            if (data.error) {
+                addLog(`Erro: ${data.error.message}`, "loss");
+                stopTrading();
             }
         };
     }
@@ -154,31 +182,53 @@
                 basis: "stake",
                 contract_type: "RUNLOW",
                 currency: "USD",
-                duration: 2,
+                duration: 1,
                 duration_unit: "t",
                 symbol: "R_100"
             }
         }));
     }
 
-    function handleResult(c) {
-        const p = c.profit;
+    function handleResult(contract) {
+        const p = parseFloat(contract.profit);
         profit += p;
         
         if (p > 0) {
             wins++;
-            currentStake = parseFloat(document.getElementById('stake').value);
+            currentStake = initialStake;
             addLog(`WIN: +$${p.toFixed(2)}`, "win");
         } else {
             losses++;
-            currentStake *= 2.1;
+            currentStake *= 2.1; // Multiplicador Martingale
             addLog(`LOSS: -$${Math.abs(p).toFixed(2)}`, "loss");
         }
 
         updateStats();
-        
-        // Pequena pausa para evitar o erro de "Unusual Activity" entre as ordens
-        setTimeout(() => { isWaiting = false; }, 2000);
+
+        // Verificar Meta
+        if (profit >= takeProfit) {
+            addLog("🎯 META ATINGIDA!", "win");
+            stopTrading();
+            return;
+        }
+
+        // Delay para evitar bloqueio por spam de ordens
+        setTimeout(() => { 
+            if(isRunning) {
+                isWaiting = false;
+                // Força uma nova verificação enviando um ping simples ou aguardando próximo ciclo
+                ws.send(JSON.stringify({ping: 1}));
+            }
+        }, 2000);
+    }
+
+    function stopTrading() {
+        isRunning = false;
+        isWaiting = false;
+        if(ws) ws.close();
+        document.getElementById('btn-start').style.display = 'block';
+        document.getElementById('btn-stop').style.display = 'none';
+        addLog("Bot interrompido.", "info");
     }
 
     function updateStats() {
@@ -187,21 +237,24 @@
         document.getElementById('ui-loss').innerText = losses;
     }
 
-    function stopTrading() {
-        isRunning = false;
-        if(ws) ws.close();
-        document.getElementById('btn-start').style.display = 'block';
-        document.getElementById('btn-stop').style.display = 'none';
-        addLog("Bot parado.", "");
-    }
-
     function addLog(m, cl) {
         const b = document.getElementById('logs');
-        b.innerHTML += `<div class="${cl}">[${new Date().toLocaleTimeString()}] ${m}</div>`;
+        const time = new Date().toLocaleTimeString();
+        b.innerHTML += `<div class="${cl}">[${time}] ${m}</div>`;
         b.scrollTop = b.scrollHeight;
     }
 
-    checkReturn();
+    /**
+     * EVENT LISTENERS (Garante que as funções existam antes do clique)
+     */
+    document.getElementById('btn-login').addEventListener('click', login);
+    document.getElementById('btn-logout').addEventListener('click', logout);
+    document.getElementById('btn-start').addEventListener('click', startTrading);
+    document.getElementById('btn-stop').addEventListener('click', stopTrading);
+
+    // Iniciar verificação automática ao carregar a página
+    window.onload = checkReturn;
+
 </script>
 </body>
 </html>
