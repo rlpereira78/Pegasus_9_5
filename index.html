@@ -75,14 +75,15 @@
      * CONFIGURAÇÕES GERAIS
      */
     const APP_ID = 1089; 
-    const REDIRECT_URL = https://rlpereira78.github.io/Pegasus_9_5/; // Pega a URL atual sem parâmetros
+    // Corrigido: URL agora é uma string (entre aspas)
+    const REDIRECT_URL = 'https://rlpereira78.github.io/Pegasus_9_5/'; 
 
     let ws, token, isRunning = false, isWaiting = false;
     let balance = 0, profit = 0, wins = 0, losses = 0, currentStake = 0;
     let initialStake = 0, takeProfit = 0;
 
     /**
-     * FUNÇÕES DE AUTENTICAÇÃO (Escopo Global)
+     * FUNÇÕES DE AUTENTICAÇÃO
      */
     function login() {
         const authUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=pt&redirect_uri=${REDIRECT_URL}`;
@@ -91,7 +92,7 @@
 
     function logout() {
         localStorage.removeItem('deriv_token');
-        location.reload();
+        window.location.href = window.location.origin + window.location.pathname;
     }
 
     function checkReturn() {
@@ -100,6 +101,7 @@
 
         if (tokenFromUrl) {
             localStorage.setItem('deriv_token', tokenFromUrl);
+            // Limpa os parâmetros da URL para segurança
             window.history.replaceState({}, document.title, window.location.pathname);
             showBotInterface();
         } else if (localStorage.getItem('deriv_token')) {
@@ -109,6 +111,8 @@
 
     function showBotInterface() {
         token = localStorage.getItem('deriv_token');
+        if (!token) return;
+
         document.getElementById('screen-auth').classList.add('hidden');
         document.getElementById('screen-bot').classList.remove('hidden');
         
@@ -116,22 +120,14 @@
         const modeLabel = document.getElementById('mode-text');
         modeLabel.innerText = isDemo ? "CONTA VIRTUAL" : "CONTA REAL";
         modeLabel.style.color = isDemo ? "#ff9800" : "#4caf50";
+
+        // Conecta o WS apenas para pegar o saldo inicial
+        initWebSocket();
     }
 
-    /**
-     * LÓGICA DO BOT
-     */
-    function startTrading() {
-        initialStake = parseFloat(document.getElementById('stake').value);
-        takeProfit = parseFloat(document.getElementById('tp').value);
-        currentStake = initialStake;
+    function initWebSocket() {
+        if (ws && ws.readyState === WebSocket.OPEN) return;
         
-        isRunning = true;
-        isWaiting = false;
-
-        document.getElementById('btn-start').style.display = 'none';
-        document.getElementById('btn-stop').style.display = 'block';
-
         ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`);
 
         ws.onopen = () => {
@@ -142,19 +138,12 @@
             const data = JSON.parse(msg.data);
 
             if (data.msg_type === 'authorize') {
-                addLog("Conexão estabelecida!", "info");
+                addLog("Conectado com sucesso!", "info");
                 ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
             }
 
             if (data.msg_type === 'balance') {
                 document.getElementById('ui-balance').innerText = `$ ${data.balance.balance.toFixed(2)}`;
-            }
-
-            // Lógica de entrada baseada em tick
-            if (data.msg_type === 'tick' || data.msg_type === 'authorize') {
-                if (isRunning && !isWaiting) {
-                    executeOrder();
-                }
             }
 
             if (data.msg_type === 'buy') {
@@ -170,9 +159,40 @@
                 stopTrading();
             }
         };
+
+        ws.onclose = () => {
+            if(isRunning) {
+                addLog("Conexão perdida. Reconectando...", "loss");
+                setTimeout(initWebSocket, 2000);
+            }
+        };
+    }
+
+    /**
+     * LÓGICA DO BOT
+     */
+    function startTrading() {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            initWebSocket();
+        }
+        
+        initialStake = parseFloat(document.getElementById('stake').value);
+        takeProfit = parseFloat(document.getElementById('tp').value);
+        currentStake = initialStake;
+        
+        isRunning = true;
+        isWaiting = false;
+
+        document.getElementById('btn-start').style.display = 'none';
+        document.getElementById('btn-stop').style.display = 'block';
+
+        addLog("Iniciando operações...", "info");
+        executeOrder();
     }
 
     function executeOrder() {
+        if (!isRunning || isWaiting) return;
+        
         isWaiting = true;
         ws.send(JSON.stringify({
             buy: 1,
@@ -187,6 +207,9 @@
                 symbol: "R_100"
             }
         }));
+        
+        // Subscreve para receber o resultado do contrato
+        ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
     }
 
     function handleResult(contract) {
@@ -205,30 +228,26 @@
 
         updateStats();
 
-        // Verificar Meta
         if (profit >= takeProfit) {
             addLog("🎯 META ATINGIDA!", "win");
             stopTrading();
             return;
         }
 
-        // Delay para evitar bloqueio por spam de ordens
         setTimeout(() => { 
             if(isRunning) {
                 isWaiting = false;
-                // Força uma nova verificação enviando um ping simples ou aguardando próximo ciclo
-                ws.send(JSON.stringify({ping: 1}));
+                executeOrder();
             }
-        }, 2000);
+        }, 1500);
     }
 
     function stopTrading() {
         isRunning = false;
         isWaiting = false;
-        if(ws) ws.close();
         document.getElementById('btn-start').style.display = 'block';
         document.getElementById('btn-stop').style.display = 'none';
-        addLog("Bot interrompido.", "info");
+        addLog("Bot parado.", "info");
     }
 
     function updateStats() {
@@ -244,15 +263,12 @@
         b.scrollTop = b.scrollHeight;
     }
 
-    /**
-     * EVENT LISTENERS (Garante que as funções existam antes do clique)
-     */
+    // Event Listeners
     document.getElementById('btn-login').addEventListener('click', login);
     document.getElementById('btn-logout').addEventListener('click', logout);
     document.getElementById('btn-start').addEventListener('click', startTrading);
     document.getElementById('btn-stop').addEventListener('click', stopTrading);
 
-    // Iniciar verificação automática ao carregar a página
     window.onload = checkReturn;
 
 </script>
