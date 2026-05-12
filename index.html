@@ -2,861 +2,332 @@
 <html lang="pt-BR">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pegasus 9.5 - Deriv Edition</title>
+    <style>
+        :root {
+            --bg: #0e0e0e;
+            --panel: #1a1a1a;
+            --card: #252525;
+            --border: #333;
+            --text: #e0e0e0;
+            --accent: #00bcd4;
+            --win: #4caf50;
+            --loss: #f44336;
+        }
 
-<title>Pegasus 9.5 - Deriv Edition</title>
+        * { box-sizing: border-box; }
 
-<style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+        }
 
-:root{
-    --bg:#0e0e0e;
-    --panel:#1a1a1a;
-    --card:#252525;
-    --border:#333;
-    --text:#e0e0e0;
-    --accent:#00bcd4;
-    --win:#4caf50;
-    --loss:#f44336;
-}
+        .container { width: 100%; max-width: 850px; }
 
-*{
-    box-sizing:border-box;
-}
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
 
-body{
-    margin:0;
-    padding:20px;
-    background:var(--bg);
-    color:var(--text);
-    font-family:Segoe UI,sans-serif;
-    display:flex;
-    justify-content:center;
-}
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 5px;
+            padding: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
 
-.container{
-    width:100%;
-    max-width:850px;
-}
+        .btn:hover { opacity: 0.9; }
+        .btn-login { background: var(--accent); color: #000; }
+        .btn-start { background: var(--win); color: #fff; }
+        .btn-stop { background: var(--loss); color: #fff; display: none; }
 
-.panel{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:20px;
-    margin-bottom:20px;
-}
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
 
-h1,h2,h3{
-    margin-top:0;
-}
+        .card {
+            background: var(--card);
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+        }
 
-.btn{
-    width:100%;
-    border:none;
-    border-radius:5px;
-    padding:12px;
-    cursor:pointer;
-    font-weight:bold;
-    transition:0.3s;
-}
+        .card small { display: block; color: #999; margin-bottom: 5px; font-size: 10px; }
 
-.btn:hover{
-    opacity:0.9;
-}
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
 
-.btn-login{
-    background:var(--accent);
-    color:#000;
-}
+        input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #222;
+            color: #fff;
+        }
 
-.btn-start{
-    background:var(--win);
-    color:#fff;
-}
+        .logs {
+            height: 250px;
+            overflow-y: auto;
+            background: #000;
+            border-radius: 5px;
+            border: 1px solid #333;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
 
-.btn-stop{
-    background:var(--loss);
-    color:#fff;
-    display:none;
-}
-
-.stats{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:10px;
-    margin:20px 0;
-}
-
-.card{
-    background:var(--card);
-    border:1px solid #444;
-    border-radius:5px;
-    padding:10px;
-    text-align:center;
-}
-
-.card small{
-    display:block;
-    color:#999;
-    margin-bottom:5px;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-bottom:15px;
-}
-
-input{
-    width:100%;
-    padding:10px;
-    border-radius:5px;
-    border:1px solid #444;
-    background:#222;
-    color:#fff;
-}
-
-.logs{
-    height:300px;
-    overflow-y:auto;
-    background:#000;
-    border-radius:5px;
-    border:1px solid #333;
-    padding:10px;
-    font-family:Courier New;
-    font-size:12px;
-}
-
-.hidden{
-    display:none;
-}
-
-.win{
-    color:var(--win);
-}
-
-.loss{
-    color:var(--loss);
-}
-
-.info{
-    color:var(--accent);
-}
-
-</style>
+        .hidden { display: none !important; }
+        .win { color: var(--win); }
+        .loss { color: var(--loss); }
+        .info { color: var(--accent); }
+    </style>
 </head>
 
 <body>
 
-<div class="container">
-
-    <!-- LOGIN -->
-    <div id="auth-screen" class="panel">
-
-        <h1 style="color:#00bcd4;">
-            Pegasus 9.5
-        </h1>
-
-        <p>
-            Faça login com sua conta Deriv.
-        </p>
-
-        <button
-            id="btn-login"
-            class="btn btn-login">
-
-            LOGIN COM DERIV
-
-        </button>
-
-    </div>
-
-    <!-- BOT -->
-    <div
-        id="bot-screen"
-        class="hidden">
-
-        <div class="panel">
-
-            <h2 id="account-type">
-                DESCONECTADO
-            </h2>
-
-            <div class="stats">
-
-                <div class="card">
-                    <small>SALDO</small>
-                    <strong id="balance">$0.00</strong>
-                </div>
-
-                <div class="card">
-                    <small>LUCRO</small>
-                    <strong id="profit">$0.00</strong>
-                </div>
-
-                <div class="card">
-                    <small>WINS</small>
-                    <strong class="win" id="wins">0</strong>
-                </div>
-
-                <div class="card">
-                    <small>LOSSES</small>
-                    <strong class="loss" id="losses">0</strong>
-                </div>
-
-            </div>
-
-            <div class="grid">
-
-                <div>
-                    <small>Stake Inicial</small>
-
-                    <input
-                        type="number"
-                        id="stake"
-                        value="0.35"
-                        step="0.01">
-                </div>
-
-                <div>
-                    <small>Meta de Lucro</small>
-
-                    <input
-                        type="number"
-                        id="take-profit"
-                        value="5"
-                        step="0.01">
-                </div>
-
-            </div>
-
-            <button
-                id="btn-start"
-                class="btn btn-start">
-
-                INICIAR BOT
-
-            </button>
-
-            <button
-                id="btn-stop"
-                class="btn btn-stop">
-
-                PARAR BOT
-
-            </button>
-
-            <br><br>
-
-            <button
-                id="btn-logout"
-                style="
-                background:none;
-                border:none;
-                color:#777;
-                cursor:pointer;">
-
-                SAIR
-
-            </button>
-
+    <div class="container">
+        <!-- TELA DE LOGIN -->
+        <div id="auth-screen" class="panel">
+            <h1 style="color:#00bcd4;">Pegasus 9.5</h1>
+            <p>Conecte sua conta Deriv para começar a operar.</p>
+            <button id="btn-login" class="btn btn-login">AUTENTICAR COM DERIV</button>
         </div>
 
-        <div
-            id="logs"
-            class="logs"></div>
+        <!-- TELA DO BOT -->
+        <div id="bot-screen" class="hidden">
+            <div class="panel">
+                <h2 id="account-type">VERIFICANDO...</h2>
+                
+                <div class="stats">
+                    <div class="card"><small>SALDO</small><strong id="balance">$0.00</strong></div>
+                    <div class="card"><small>LUCRO</small><strong id="profit">$0.00</strong></div>
+                    <div class="card"><small>WINS</small><strong class="win" id="wins">0</strong></div>
+                    <div class="card"><small>LOSSES</small><strong class="loss" id="losses">0</strong></div>
+                </div>
 
+                <div class="grid">
+                    <div><small>Stake Inicial</small><input type="number" id="stake" value="0.35" step="0.01"></div>
+                    <div><small>Meta de Lucro</small><input type="number" id="take-profit" value="5" step="0.01"></div>
+                </div>
+
+                <button id="btn-start" class="btn btn-start">INICIAR BOT</button>
+                <button id="btn-stop" class="btn btn-stop">PARAR BOT</button>
+                <button id="btn-logout" style="background:none; border:none; color:#777; cursor:pointer; margin-top:15px; width:100%;">SAIR DA CONTA</button>
+            </div>
+
+            <div id="logs" class="logs"></div>
+        </div>
     </div>
 
-</div>
+    <script>
+        // --- CONFIGURAÇÃO ---
+        // IMPORTANTE: Use apenas os números do seu App ID
+        const APP_ID = 63632; // Substitua pelo seu ID real numérico
+        const REDIRECT_URL = 'https://rlpereira78.github.io/Pegasus_9_5/';
+        const WS_URL = `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
 
-<script>
+        // --- VARIÁVEIS DE ESTADO ---
+        let ws;
+        let token;
+        let running = false;
+        let stake = 0.35;
+        let currentStake = 0.35;
+        let takeProfit = 5;
+        let totalProfit = 0;
+        let wins = 0;
+        let losses = 0;
+        let proposalId = null;
 
-////////////////////////////////////////////////////////
-// CONFIG
-////////////////////////////////////////////////////////
-
-const APP_ID = 1089;
-// TROQUE PELO SEU APP_ID REAL
-
-const REDIRECT_URL =
-'https://rlpereira78.github.io/Pegasus_9_5/';
-
-const WS_URL =
-`wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
-
-////////////////////////////////////////////////////////
-// VARIÁVEIS
-////////////////////////////////////////////////////////
-
-let ws;
-let token;
-
-let running = false;
-
-let stake = 0;
-let currentStake = 0;
-let takeProfit = 0;
-
-let totalProfit = 0;
-
-let wins = 0;
-let losses = 0;
-
-let proposalId = null;
-let contractId = null;
-
-////////////////////////////////////////////////////////
-// LOGIN
-////////////////////////////////////////////////////////
-
-function login(){
-
-    const oauthUrl =
-`https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=pt&redirect_uri=${encodeURIComponent(REDIRECT_URL)}`;
-
-    window.location.href = oauthUrl;
-}
-
-////////////////////////////////////////////////////////
-// LOGOUT
-////////////////////////////////////////////////////////
-
-function logout(){
-
-    localStorage.removeItem("deriv_token");
-
-    window.location.href = REDIRECT_URL;
-}
-
-////////////////////////////////////////////////////////
-// CHECK LOGIN
-////////////////////////////////////////////////////////
-
-function checkLogin(){
-
-    console.log("URL:");
-    console.log(window.location.href);
-
-    let tokenFromUrl = null;
-
-    ////////////////////////////////////////////////////
-    // QUERY STRING
-    ////////////////////////////////////////////////////
-
-    const searchParams =
-        new URLSearchParams(window.location.search);
-
-    tokenFromUrl =
-        searchParams.get("token1") ||
-        searchParams.get("token");
-
-    ////////////////////////////////////////////////////
-    // HASH
-    ////////////////////////////////////////////////////
-
-    if(!tokenFromUrl && window.location.hash){
-
-        const hash =
-            window.location.hash.replace("#","");
-
-        console.log("HASH:");
-        console.log(hash);
-
-        const hashParams =
-            new URLSearchParams(hash);
-
-        tokenFromUrl =
-            hashParams.get("token1") ||
-            hashParams.get("token");
-    }
-
-    ////////////////////////////////////////////////////
-    // TOKEN
-    ////////////////////////////////////////////////////
-
-    if(tokenFromUrl){
-
-        console.log("TOKEN ENCONTRADO:");
-        console.log(tokenFromUrl);
-
-        localStorage.setItem(
-            "deriv_token",
-            tokenFromUrl
-        );
-
-        ////////////////////////////////////////////////////
-        // LIMPA URL
-        ////////////////////////////////////////////////////
-
-        window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname
-        );
-    }
-
-    ////////////////////////////////////////////////////
-    // RECUPERA TOKEN
-    ////////////////////////////////////////////////////
-
-    token =
-        localStorage.getItem("deriv_token");
-
-    console.log("TOKEN STORAGE:");
-    console.log(token);
-
-    ////////////////////////////////////////////////////
-    // MOSTRA BOT
-    ////////////////////////////////////////////////////
-
-    if(token){
-
-        document
-            .getElementById("auth-screen")
-            .classList.add("hidden");
-
-        document
-            .getElementById("bot-screen")
-            .classList.remove("hidden");
-
-        connectWebSocket();
-    }
-}
-
-////////////////////////////////////////////////////////
-// WEBSOCKET
-////////////////////////////////////////////////////////
-
-function connectWebSocket(){
-
-    ws = new WebSocket(WS_URL);
-
-    ws.onopen = () => {
-
-        addLog(
-            "Conectando na Deriv...",
-            "info"
-        );
-
-        ws.send(JSON.stringify({
-            authorize: token
-        }));
-    };
-
-    ws.onmessage = (event) => {
-
-        const data =
-            JSON.parse(event.data);
-
-        console.log(data);
-
-        ////////////////////////////////////////////////////
-        // ERROR
-        ////////////////////////////////////////////////////
-
-        if(data.error){
-
-            addLog(
-                "ERRO: " + data.error.message,
-                "loss"
-            );
-
-            return;
+        // --- FUNÇÕES DE NAVEGAÇÃO ---
+        function login() {
+            const oauthUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=pt`;
+            window.location.href = oauthUrl;
         }
 
-        ////////////////////////////////////////////////////
-        // AUTHORIZE
-        ////////////////////////////////////////////////////
+        function logout() {
+            localStorage.removeItem("deriv_token");
+            window.location.href = REDIRECT_URL;
+        }
 
-        if(data.msg_type === "authorize"){
+        // --- GERENCIAMENTO DE CONEXÃO ---
+        function checkLogin() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenFromUrl = urlParams.get("token1");
 
-            addLog(
-                "Autorizado com sucesso",
-                "win"
-            );
+            if (tokenFromUrl) {
+                localStorage.setItem("deriv_token", tokenFromUrl);
+                // Limpa a URL e recarrega para evitar problemas de loop
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
 
-            const isDemo =
-                data.authorize.is_virtual;
+            token = localStorage.getItem("deriv_token");
 
-            const label =
-                document.getElementById("account-type");
+            if (token) {
+                document.getElementById("auth-screen").classList.add("hidden");
+                document.getElementById("bot-screen").classList.remove("hidden");
+                connectWebSocket();
+            }
+        }
 
-            label.innerText =
-                isDemo
-                ? "CONTA DEMO"
-                : "CONTA REAL";
+        function connectWebSocket() {
+            ws = new WebSocket(WS_URL);
 
-            label.style.color =
-                isDemo
-                ? "#ff9800"
-                : "#4caf50";
+            ws.onopen = () => {
+                addLog("Conexão estabelecida. Autorizando...", "info");
+                ws.send(JSON.stringify({ authorize: token }));
+            };
 
-            ////////////////////////////////////////////////////
-            // BALANCE
-            ////////////////////////////////////////////////////
+            ws.onmessage = (msg) => {
+                const data = JSON.parse(msg.data);
 
+                if (data.error) {
+                    addLog("ERRO: " + data.error.message, "loss");
+                    if(data.error.code === 'InvalidToken') logout();
+                    return;
+                }
+
+                switch (data.msg_type) {
+                    case "authorize":
+                        const acc = data.authorize;
+                        document.getElementById("account-type").innerText = acc.is_virtual ? "CONTA DEMO" : "CONTA REAL";
+                        document.getElementById("account-type").style.color = acc.is_virtual ? "#ff9800" : "#4caf50";
+                        ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+                        addLog("Bot pronto para operar!", "win");
+                        break;
+
+                    case "balance":
+                        document.getElementById("balance").innerText = `$${data.balance.balance.toFixed(2)}`;
+                        break;
+
+                    case "proposal":
+                        proposalId = data.proposal.id;
+                        if (running) buyContract();
+                        break;
+
+                    case "buy":
+                        addLog(`Ordem enviada: ${data.buy.contract_id}`, "info");
+                        ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id: data.buy.contract_id, subscribe: 1 }));
+                        break;
+
+                    case "proposal_open_contract":
+                        if (data.proposal_open_contract.is_sold) {
+                            handleResult(data.proposal_open_contract);
+                        }
+                        break;
+                }
+            };
+
+            ws.onclose = () => {
+                addLog("Conexão perdida. Tentando reconectar...", "loss");
+                setTimeout(connectWebSocket, 5000);
+            };
+        }
+
+        // --- LÓGICA DO BOT ---
+        function startBot() {
+            if (running) return;
+            
+            stake = parseFloat(document.getElementById("stake").value);
+            takeProfit = parseFloat(document.getElementById("take-profit").value);
+            currentStake = stake;
+            running = true;
+
+            document.getElementById("btn-start").style.display = "none";
+            document.getElementById("btn-stop").style.display = "block";
+            
+            addLog("Estratégia Iniciada...", "win");
+            createProposal();
+        }
+
+        function stopBot() {
+            running = false;
+            document.getElementById("btn-start").style.display = "block";
+            document.getElementById("btn-stop").style.display = "none";
+            addLog("Bot solicitado para parar.", "loss");
+        }
+
+        function createProposal() {
+            if (!running) return;
             ws.send(JSON.stringify({
-                balance:1,
-                subscribe:1
+                proposal: 1,
+                amount: currentStake,
+                basis: "stake",
+                contract_type: "PUT",
+                currency: "USD",
+                duration: 1,
+                duration_unit: "t",
+                symbol: "R_100"
             }));
         }
 
-        ////////////////////////////////////////////////////
-        // BALANCE
-        ////////////////////////////////////////////////////
-
-        if(data.msg_type === "balance"){
-
-            document
-                .getElementById("balance")
-                .innerText =
-                "$" +
-                parseFloat(
-                    data.balance.balance
-                ).toFixed(2);
+        function buyContract() {
+            if (!proposalId || !running) return;
+            ws.send(JSON.stringify({ buy: proposalId, price: currentStake }));
+            proposalId = null; 
         }
 
-        ////////////////////////////////////////////////////
-        // PROPOSAL
-        ////////////////////////////////////////////////////
+        function handleResult(contract) {
+            const profit = parseFloat(contract.profit);
+            totalProfit += profit;
 
-        if(data.msg_type === "proposal"){
+            if (profit > 0) {
+                wins++;
+                currentStake = stake; // Reseta Martingale
+                addLog(`WIN: +$${profit.toFixed(2)}`, "win");
+            } else {
+                losses++;
+                currentStake *= 2.1; // Aplica Martingale
+                addLog(`LOSS: $${profit.toFixed(2)}`, "loss");
+            }
 
-            proposalId =
-                data.proposal.id;
+            updateUI();
 
-            buyContract();
+            if (totalProfit >= takeProfit) {
+                addLog("META ALCANÇADA!", "win");
+                stopBot();
+            } else if (running) {
+                setTimeout(createProposal, 2000);
+            }
         }
 
-        ////////////////////////////////////////////////////
-        // BUY
-        ////////////////////////////////////////////////////
-
-        if(data.msg_type === "buy"){
-
-            contractId =
-                data.buy.contract_id;
-
-            addLog(
-                "Contrato comprado",
-                "info"
-            );
-
-            monitorContract();
+        function updateUI() {
+            document.getElementById("profit").innerText = `$${totalProfit.toFixed(2)}`;
+            document.getElementById("wins").innerText = wins;
+            document.getElementById("losses").innerText = losses;
         }
 
-        ////////////////////////////////////////////////////
-        // RESULTADO
-        ////////////////////////////////////////////////////
-
-        if(
-            data.msg_type ===
-            "proposal_open_contract"
-            &&
-            data.proposal_open_contract.is_sold
-        ){
-
-            handleResult(
-                data.proposal_open_contract
-            );
+        function addLog(msg, cls) {
+            const logs = document.getElementById("logs");
+            const now = new Date().toLocaleTimeString();
+            logs.innerHTML += `<div class="${cls}">[${now}] ${msg}</div>`;
+            logs.scrollTop = logs.scrollHeight;
         }
-    };
 
-    ws.onclose = () => {
-
-        addLog(
-            "Conexão encerrada",
-            "loss"
-        );
-    };
-}
-
-////////////////////////////////////////////////////////
-// START BOT
-////////////////////////////////////////////////////////
-
-function startBot(){
-
-    if(running) return;
-
-    running = true;
-
-    stake =
-        parseFloat(
-            document.getElementById("stake").value
-        );
-
-    currentStake = stake;
-
-    takeProfit =
-        parseFloat(
-            document.getElementById("take-profit").value
-        );
-
-    document
-        .getElementById("btn-start")
-        .style.display = "none";
-
-    document
-        .getElementById("btn-stop")
-        .style.display = "block";
-
-    addLog(
-        "BOT INICIADO",
-        "win"
-    );
-
-    createProposal();
-}
-
-////////////////////////////////////////////////////////
-// STOP BOT
-////////////////////////////////////////////////////////
-
-function stopBot(){
-
-    running = false;
-
-    document
-        .getElementById("btn-start")
-        .style.display = "block";
-
-    document
-        .getElementById("btn-stop")
-        .style.display = "none";
-
-    addLog(
-        "BOT PARADO",
-        "loss"
-    );
-}
-
-////////////////////////////////////////////////////////
-// CREATE PROPOSAL
-////////////////////////////////////////////////////////
-
-function createProposal(){
-
-    if(!running) return;
-
-    addLog(
-        `Solicitando proposal $${currentStake}`,
-        "info"
-    );
-
-    ws.send(JSON.stringify({
-
-        proposal:1,
-
-        amount:currentStake,
-
-        basis:"stake",
-
-        contract_type:"PUT",
-
-        currency:"USD",
-
-        duration:1,
-
-        duration_unit:"t",
-
-        symbol:"R_100"
-
-    }));
-}
-
-////////////////////////////////////////////////////////
-// BUY CONTRACT
-////////////////////////////////////////////////////////
-
-function buyContract(){
-
-    ws.send(JSON.stringify({
-
-        buy:proposalId,
-
-        price:currentStake
-
-    }));
-}
-
-////////////////////////////////////////////////////////
-// MONITOR
-////////////////////////////////////////////////////////
-
-function monitorContract(){
-
-    ws.send(JSON.stringify({
-
-        proposal_open_contract:1,
-
-        contract_id:contractId,
-
-        subscribe:1
-
-    }));
-}
-
-////////////////////////////////////////////////////////
-// RESULT
-////////////////////////////////////////////////////////
-
-function handleResult(contract){
-
-    const p =
-        parseFloat(contract.profit);
-
-    totalProfit += p;
-
-    ////////////////////////////////////////////////////
-    // WIN
-    ////////////////////////////////////////////////////
-
-    if(p > 0){
-
-        wins++;
-
-        currentStake = stake;
-
-        addLog(
-            `WIN +$${p.toFixed(2)}`,
-            "win"
-        );
-    }
-
-    ////////////////////////////////////////////////////
-    // LOSS
-    ////////////////////////////////////////////////////
-
-    else{
-
-        losses++;
-
-        currentStake *= 2.1;
-
-        addLog(
-            `LOSS ${p.toFixed(2)}`,
-            "loss"
-        );
-    }
-
-    ////////////////////////////////////////////////////
-    // UPDATE
-    ////////////////////////////////////////////////////
-
-    updateStats();
-
-    ////////////////////////////////////////////////////
-    // TAKE PROFIT
-    ////////////////////////////////////////////////////
-
-    if(totalProfit >= takeProfit){
-
-        addLog(
-            "META BATIDA",
-            "win"
-        );
-
-        stopBot();
-
-        return;
-    }
-
-    ////////////////////////////////////////////////////
-    // NEXT TRADE
-    ////////////////////////////////////////////////////
-
-    if(running){
-
-        setTimeout(() => {
-
-            createProposal();
-
-        },2000);
-    }
-}
-
-////////////////////////////////////////////////////////
-// UPDATE UI
-////////////////////////////////////////////////////////
-
-function updateStats(){
-
-    document
-        .getElementById("profit")
-        .innerText =
-        "$" +
-        totalProfit.toFixed(2);
-
-    document
-        .getElementById("wins")
-        .innerText = wins;
-
-    document
-        .getElementById("losses")
-        .innerText = losses;
-}
-
-////////////////////////////////////////////////////////
-// LOG
-////////////////////////////////////////////////////////
-
-function addLog(message,cls=""){
-
-    const logs =
-        document.getElementById("logs");
-
-    const time =
-        new Date().toLocaleTimeString();
-
-    logs.innerHTML +=
-`
-<div class="${cls}">
-[${time}] ${message}
-</div>
-`;
-
-    logs.scrollTop =
-        logs.scrollHeight;
-}
-
-////////////////////////////////////////////////////////
-// EVENTS
-////////////////////////////////////////////////////////
-
-document
-    .getElementById("btn-login")
-    .addEventListener("click",login);
-
-document
-    .getElementById("btn-logout")
-    .addEventListener("click",logout);
-
-document
-    .getElementById("btn-start")
-    .addEventListener("click",startBot);
-
-document
-    .getElementById("btn-stop")
-    .addEventListener("click",stopBot);
-
-////////////////////////////////////////////////////////
-// LOAD
-////////////////////////////////////////////////////////
-
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        checkLogin();
-
-    }
-);
-
-</script>
-
+        // --- EVENTOS ---
+        document.getElementById("btn-login").onclick = login;
+        document.getElementById("btn-logout").onclick = logout;
+        document.getElementById("btn-start").onclick = startBot;
+        document.getElementById("btn-stop").onclick = stopBot;
+
+        window.onload = checkLogin;
+    </script>
 </body>
 </html>
