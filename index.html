@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,129 +8,146 @@
 <title>Pegasus 9.5 - Deriv Edition</title>
 
 <style>
-    :root{
-        --bg:#0e0e0e;
-        --panel:#1a1a1a;
-        --card:#252525;
-        --border:#333;
-        --text:#e0e0e0;
-        --accent:#00bcd4;
-        --win:#4caf50;
-        --loss:#f44336;
-    }
 
-    body{
-        background:var(--bg);
-        color:var(--text);
-        font-family:Segoe UI,sans-serif;
-        display:flex;
-        justify-content:center;
-        padding:20px;
-    }
+:root{
+    --bg:#0e0e0e;
+    --panel:#1a1a1a;
+    --card:#252525;
+    --border:#333;
+    --text:#e0e0e0;
+    --accent:#00bcd4;
+    --win:#4caf50;
+    --loss:#f44336;
+}
 
-    .container{
-        width:100%;
-        max-width:850px;
-    }
+*{
+    box-sizing:border-box;
+}
 
-    .panel{
-        background:var(--panel);
-        border:1px solid var(--border);
-        padding:20px;
-        border-radius:10px;
-        margin-bottom:20px;
-    }
+body{
+    margin:0;
+    padding:20px;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Segoe UI,sans-serif;
+    display:flex;
+    justify-content:center;
+}
 
-    .btn{
-        border:none;
-        padding:12px 20px;
-        border-radius:5px;
-        font-weight:bold;
-        cursor:pointer;
-        width:100%;
-    }
+.container{
+    width:100%;
+    max-width:850px;
+}
 
-    .btn-login{
-        background:var(--accent);
-        color:#000;
-    }
+.panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:20px;
+}
 
-    .btn-start{
-        background:var(--win);
-        color:#fff;
-    }
+h1,h2,h3{
+    margin-top:0;
+}
 
-    .btn-stop{
-        background:var(--loss);
-        color:#fff;
-        display:none;
-    }
+.btn{
+    width:100%;
+    border:none;
+    border-radius:5px;
+    padding:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.3s;
+}
 
-    .stats{
-        display:grid;
-        grid-template-columns:repeat(4,1fr);
-        gap:10px;
-        margin:20px 0;
-    }
+.btn:hover{
+    opacity:0.9;
+}
 
-    .card{
-        background:var(--card);
-        padding:10px;
-        border-radius:5px;
-        border:1px solid #444;
-        text-align:center;
-    }
+.btn-login{
+    background:var(--accent);
+    color:#000;
+}
 
-    .card small{
-        color:#888;
-        display:block;
-        margin-bottom:5px;
-    }
+.btn-start{
+    background:var(--win);
+    color:#fff;
+}
 
-    input{
-        width:100%;
-        padding:10px;
-        background:#222;
-        border:1px solid #444;
-        color:#fff;
-        border-radius:5px;
-    }
+.btn-stop{
+    background:var(--loss);
+    color:#fff;
+    display:none;
+}
 
-    .grid{
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:10px;
-        margin-bottom:15px;
-    }
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin:20px 0;
+}
 
-    .logs{
-        height:300px;
-        overflow-y:auto;
-        background:#000;
-        border:1px solid #333;
-        padding:10px;
-        font-family:Courier New;
-        font-size:12px;
-        border-radius:5px;
-    }
+.card{
+    background:var(--card);
+    border:1px solid #444;
+    border-radius:5px;
+    padding:10px;
+    text-align:center;
+}
 
-    .hidden{
-        display:none;
-    }
+.card small{
+    display:block;
+    color:#999;
+    margin-bottom:5px;
+}
 
-    .win{
-        color:var(--win);
-    }
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:15px;
+}
 
-    .loss{
-        color:var(--loss);
-    }
+input{
+    width:100%;
+    padding:10px;
+    border-radius:5px;
+    border:1px solid #444;
+    background:#222;
+    color:#fff;
+}
 
-    .info{
-        color:var(--accent);
-    }
+.logs{
+    height:300px;
+    overflow-y:auto;
+    background:#000;
+    border-radius:5px;
+    border:1px solid #333;
+    padding:10px;
+    font-family:Courier New;
+    font-size:12px;
+}
+
+.hidden{
+    display:none;
+}
+
+.win{
+    color:var(--win);
+}
+
+.loss{
+    color:var(--loss);
+}
+
+.info{
+    color:var(--accent);
+}
+
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -137,22 +155,28 @@
     <!-- LOGIN -->
     <div id="auth-screen" class="panel">
 
-        <h2 style="color:#00bcd4">
+        <h1 style="color:#00bcd4;">
             Pegasus 9.5
-        </h2>
+        </h1>
 
         <p>
-            Login necessário para acessar a Deriv.
+            Faça login com sua conta Deriv.
         </p>
 
-        <button id="btn-login" class="btn btn-login">
+        <button
+            id="btn-login"
+            class="btn btn-login">
+
             LOGIN COM DERIV
+
         </button>
 
     </div>
 
     <!-- BOT -->
-    <div id="bot-screen" class="hidden">
+    <div
+        id="bot-screen"
+        class="hidden">
 
         <div class="panel">
 
@@ -188,34 +212,61 @@
 
                 <div>
                     <small>Stake Inicial</small>
-                    <input type="number" id="stake" value="0.35" step="0.01">
+
+                    <input
+                        type="number"
+                        id="stake"
+                        value="0.35"
+                        step="0.01">
                 </div>
 
                 <div>
-                    <small>Meta Lucro</small>
-                    <input type="number" id="takeProfit" value="5" step="0.01">
+                    <small>Meta de Lucro</small>
+
+                    <input
+                        type="number"
+                        id="take-profit"
+                        value="5"
+                        step="0.01">
                 </div>
 
             </div>
 
-            <button id="btn-start" class="btn btn-start">
+            <button
+                id="btn-start"
+                class="btn btn-start">
+
                 INICIAR BOT
+
             </button>
 
-            <button id="btn-stop" class="btn btn-stop">
+            <button
+                id="btn-stop"
+                class="btn btn-stop">
+
                 PARAR BOT
+
             </button>
 
             <br><br>
 
-            <button id="btn-logout"
-                    style="background:none;border:none;color:#777;cursor:pointer;">
+            <button
+                id="btn-logout"
+                style="
+                background:none;
+                border:none;
+                color:#777;
+                cursor:pointer;">
+
                 SAIR
+
             </button>
 
         </div>
 
-        <div class="logs" id="logs"></div>
+        <div
+            id="logs"
+            class="logs"></div>
 
     </div>
 
@@ -223,12 +274,12 @@
 
 <script>
 
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 // CONFIG
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
-const APP_ID = 99999;
-// TROQUE PELO SEU APP_ID
+const APP_ID = 1089;
+// TROQUE PELO SEU APP_ID REAL
 
 const REDIRECT_URL =
 'https://rlpereira78.github.io/Pegasus_9_5/';
@@ -236,9 +287,9 @@ const REDIRECT_URL =
 const WS_URL =
 `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
 
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 // VARIÁVEIS
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 let ws;
 let token;
@@ -257,46 +308,88 @@ let losses = 0;
 let proposalId = null;
 let contractId = null;
 
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 // LOGIN
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 function login(){
 
-    const url =
+    const oauthUrl =
 `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=pt&redirect_uri=${encodeURIComponent(REDIRECT_URL)}`;
 
-    window.location.href = url;
+    window.location.href = oauthUrl;
 }
+
+////////////////////////////////////////////////////////
+// LOGOUT
+////////////////////////////////////////////////////////
 
 function logout(){
 
     localStorage.removeItem("deriv_token");
 
-    location.href = location.pathname;
+    window.location.href = REDIRECT_URL;
 }
 
-//////////////////////////////////////////////////////
-// CHECK TOKEN
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+// CHECK LOGIN
+////////////////////////////////////////////////////////
 
 function checkLogin(){
 
-    const params =
+    console.log("URL:");
+    console.log(window.location.href);
+
+    let tokenFromUrl = null;
+
+    ////////////////////////////////////////////////////
+    // QUERY STRING
+    ////////////////////////////////////////////////////
+
+    const searchParams =
         new URLSearchParams(window.location.search);
 
-    const tokenFromUrl =
-        params.get("token1") ||
-        params.get("token");
+    tokenFromUrl =
+        searchParams.get("token1") ||
+        searchParams.get("token");
 
-    console.log(window.location.search);
+    ////////////////////////////////////////////////////
+    // HASH
+    ////////////////////////////////////////////////////
+
+    if(!tokenFromUrl && window.location.hash){
+
+        const hash =
+            window.location.hash.replace("#","");
+
+        console.log("HASH:");
+        console.log(hash);
+
+        const hashParams =
+            new URLSearchParams(hash);
+
+        tokenFromUrl =
+            hashParams.get("token1") ||
+            hashParams.get("token");
+    }
+
+    ////////////////////////////////////////////////////
+    // TOKEN
+    ////////////////////////////////////////////////////
 
     if(tokenFromUrl){
+
+        console.log("TOKEN ENCONTRADO:");
+        console.log(tokenFromUrl);
 
         localStorage.setItem(
             "deriv_token",
             tokenFromUrl
         );
+
+        ////////////////////////////////////////////////////
+        // LIMPA URL
+        ////////////////////////////////////////////////////
 
         window.history.replaceState(
             {},
@@ -305,7 +398,19 @@ function checkLogin(){
         );
     }
 
-    token = localStorage.getItem("deriv_token");
+    ////////////////////////////////////////////////////
+    // RECUPERA TOKEN
+    ////////////////////////////////////////////////////
+
+    token =
+        localStorage.getItem("deriv_token");
+
+    console.log("TOKEN STORAGE:");
+    console.log(token);
+
+    ////////////////////////////////////////////////////
+    // MOSTRA BOT
+    ////////////////////////////////////////////////////
 
     if(token){
 
@@ -317,36 +422,40 @@ function checkLogin(){
             .getElementById("bot-screen")
             .classList.remove("hidden");
 
-        connectWS();
+        connectWebSocket();
     }
 }
 
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 // WEBSOCKET
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
-function connectWS(){
+function connectWebSocket(){
 
     ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
 
-        addLog("Conectando...", "info");
+        addLog(
+            "Conectando na Deriv...",
+            "info"
+        );
 
         ws.send(JSON.stringify({
             authorize: token
         }));
     };
 
-    ws.onmessage = (msg) => {
+    ws.onmessage = (event) => {
 
-        const data = JSON.parse(msg.data);
+        const data =
+            JSON.parse(event.data);
 
         console.log(data);
 
-        //////////////////////////////////////////////
-        // ERRO
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
+        // ERROR
+        ////////////////////////////////////////////////////
 
         if(data.error){
 
@@ -358,9 +467,9 @@ function connectWS(){
             return;
         }
 
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
         // AUTHORIZE
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
 
         if(data.msg_type === "authorize"){
 
@@ -385,9 +494,9 @@ function connectWS(){
                 ? "#ff9800"
                 : "#4caf50";
 
-            //////////////////////////////////////////
+            ////////////////////////////////////////////////////
             // BALANCE
-            //////////////////////////////////////////
+            ////////////////////////////////////////////////////
 
             ws.send(JSON.stringify({
                 balance:1,
@@ -395,31 +504,36 @@ function connectWS(){
             }));
         }
 
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
         // BALANCE
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
 
         if(data.msg_type === "balance"){
 
-            document.getElementById("balance")
-            .innerText =
-            "$" + data.balance.balance.toFixed(2);
+            document
+                .getElementById("balance")
+                .innerText =
+                "$" +
+                parseFloat(
+                    data.balance.balance
+                ).toFixed(2);
         }
 
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
         // PROPOSAL
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
 
         if(data.msg_type === "proposal"){
 
-            proposalId = data.proposal.id;
+            proposalId =
+                data.proposal.id;
 
             buyContract();
         }
 
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
         // BUY
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
 
         if(data.msg_type === "buy"){
 
@@ -427,19 +541,20 @@ function connectWS(){
                 data.buy.contract_id;
 
             addLog(
-                `Contrato comprado: ${contractId}`,
+                "Contrato comprado",
                 "info"
             );
 
             monitorContract();
         }
 
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
         // RESULTADO
-        //////////////////////////////////////////////
+        ////////////////////////////////////////////////////
 
         if(
-            data.msg_type === "proposal_open_contract"
+            data.msg_type ===
+            "proposal_open_contract"
             &&
             data.proposal_open_contract.is_sold
         ){
@@ -459,9 +574,9 @@ function connectWS(){
     };
 }
 
-//////////////////////////////////////////////////////
-// START
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+// START BOT
+////////////////////////////////////////////////////////
 
 function startBot(){
 
@@ -478,40 +593,50 @@ function startBot(){
 
     takeProfit =
         parseFloat(
-            document.getElementById("takeProfit").value
+            document.getElementById("take-profit").value
         );
 
-    document.getElementById("btn-start")
-    .style.display = "none";
+    document
+        .getElementById("btn-start")
+        .style.display = "none";
 
-    document.getElementById("btn-stop")
-    .style.display = "block";
+    document
+        .getElementById("btn-stop")
+        .style.display = "block";
 
-    addLog("BOT INICIADO", "win");
+    addLog(
+        "BOT INICIADO",
+        "win"
+    );
 
     createProposal();
 }
 
-//////////////////////////////////////////////////////
-// STOP
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+// STOP BOT
+////////////////////////////////////////////////////////
 
 function stopBot(){
 
     running = false;
 
-    document.getElementById("btn-start")
-    .style.display = "block";
+    document
+        .getElementById("btn-start")
+        .style.display = "block";
 
-    document.getElementById("btn-stop")
-    .style.display = "none";
+    document
+        .getElementById("btn-stop")
+        .style.display = "none";
 
-    addLog("BOT PARADO", "loss");
+    addLog(
+        "BOT PARADO",
+        "loss"
+    );
 }
 
-//////////////////////////////////////////////////////
-// PROPOSAL
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+// CREATE PROPOSAL
+////////////////////////////////////////////////////////
 
 function createProposal(){
 
@@ -543,9 +668,9 @@ function createProposal(){
     }));
 }
 
-//////////////////////////////////////////////////////
-// BUY
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+// BUY CONTRACT
+////////////////////////////////////////////////////////
 
 function buyContract(){
 
@@ -558,9 +683,9 @@ function buyContract(){
     }));
 }
 
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 // MONITOR
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 function monitorContract(){
 
@@ -575,36 +700,36 @@ function monitorContract(){
     }));
 }
 
-//////////////////////////////////////////////////////
-// RESULTADO
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+// RESULT
+////////////////////////////////////////////////////////
 
 function handleResult(contract){
 
-    const profit =
+    const p =
         parseFloat(contract.profit);
 
-    totalProfit += profit;
+    totalProfit += p;
 
-    //////////////////////////////////////////////
+    ////////////////////////////////////////////////////
     // WIN
-    //////////////////////////////////////////////
+    ////////////////////////////////////////////////////
 
-    if(profit > 0){
+    if(p > 0){
 
         wins++;
 
         currentStake = stake;
 
         addLog(
-            `WIN +$${profit.toFixed(2)}`,
+            `WIN +$${p.toFixed(2)}`,
             "win"
         );
     }
 
-    //////////////////////////////////////////////
+    ////////////////////////////////////////////////////
     // LOSS
-    //////////////////////////////////////////////
+    ////////////////////////////////////////////////////
 
     else{
 
@@ -613,20 +738,20 @@ function handleResult(contract){
         currentStake *= 2.1;
 
         addLog(
-            `LOSS ${profit.toFixed(2)}`,
+            `LOSS ${p.toFixed(2)}`,
             "loss"
         );
     }
 
-    //////////////////////////////////////////////
-    // UPDATE UI
-    //////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    // UPDATE
+    ////////////////////////////////////////////////////
 
-    updateUI();
+    updateStats();
 
-    //////////////////////////////////////////////
+    ////////////////////////////////////////////////////
     // TAKE PROFIT
-    //////////////////////////////////////////////
+    ////////////////////////////////////////////////////
 
     if(totalProfit >= takeProfit){
 
@@ -640,9 +765,9 @@ function handleResult(contract){
         return;
     }
 
-    //////////////////////////////////////////////
-    // NOVA ENTRADA
-    //////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    // NEXT TRADE
+    ////////////////////////////////////////////////////
 
     if(running){
 
@@ -650,32 +775,36 @@ function handleResult(contract){
 
             createProposal();
 
-        }, 2000);
+        },2000);
     }
 }
 
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 // UPDATE UI
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
-function updateUI(){
+function updateStats(){
 
-    document.getElementById("profit")
-    .innerText =
-    "$" + totalProfit.toFixed(2);
+    document
+        .getElementById("profit")
+        .innerText =
+        "$" +
+        totalProfit.toFixed(2);
 
-    document.getElementById("wins")
-    .innerText = wins;
+    document
+        .getElementById("wins")
+        .innerText = wins;
 
-    document.getElementById("losses")
-    .innerText = losses;
+    document
+        .getElementById("losses")
+        .innerText = losses;
 }
 
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 // LOG
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
-function addLog(msg,cls=""){
+function addLog(message,cls=""){
 
     const logs =
         document.getElementById("logs");
@@ -684,44 +813,48 @@ function addLog(msg,cls=""){
         new Date().toLocaleTimeString();
 
     logs.innerHTML +=
-    `<div class="${cls}">
-        [${time}] ${msg}
-    </div>`;
+`
+<div class="${cls}">
+[${time}] ${message}
+</div>
+`;
 
     logs.scrollTop =
         logs.scrollHeight;
 }
 
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 // EVENTS
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 document
-.getElementById("btn-login")
-.addEventListener("click",login);
+    .getElementById("btn-login")
+    .addEventListener("click",login);
 
 document
-.getElementById("btn-logout")
-.addEventListener("click",logout);
+    .getElementById("btn-logout")
+    .addEventListener("click",logout);
 
 document
-.getElementById("btn-start")
-.addEventListener("click",startBot);
+    .getElementById("btn-start")
+    .addEventListener("click",startBot);
 
 document
-.getElementById("btn-stop")
-.addEventListener("click",stopBot);
+    .getElementById("btn-stop")
+    .addEventListener("click",stopBot);
 
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 // LOAD
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
-window.addEventListener("load", () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-    console.log("Página carregada");
+        checkLogin();
 
-    checkLogin();
-});
+    }
+);
 
 </script>
 
