@@ -1,123 +1,72 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pegasus 9.5 - Autenticado</title>
+    <title>Deriv Bot 2.0 - PKCE Auth</title>
     <style>
-        :root { --bg: #0e0e0e; --panel: #1a1a1a; --border: #333; --text: #e0e0e0; --accent: #00bcd4; --win: #4caf50; --loss: #f44336; }
-        body { margin: 0; padding: 20px; background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 850px; }
-        .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
-        .btn { width: 100%; border: none; border-radius: 5px; padding: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-login { background: var(--accent); color: #000; }
-        .hidden { display: none !important; }
-        .logs { height: 200px; overflow-y: auto; background: #000; border: 1px solid #333; padding: 10px; font-family: monospace; font-size: 12px; margin-top: 20px; text-align: left; }
+        body { font-family: sans-serif; background: #15171a; color: white; text-align: center; padding: 50px; }
+        .box { background: #1c1e22; padding: 30px; border-radius: 12px; display: inline-block; }
+        button { background: #ff444f; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #status { margin-top: 20px; color: #888; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="auth-screen" class="panel">
-        <h1 style="color: var(--accent)">Pegasus 9.5</h1>
-        <p id="status-msg">Iniciando conexão segura...</p>
-        <button id="btn-login" class="btn btn-login hidden">REAUTENTICAR COM DERIV</button>
-    </div>
-
-    <div id="bot-screen" class="panel hidden">
-        <h2 id="acc-display">CONECTADO</h2>
-        <div id="balance-display" style="font-size: 24px; color: var(--win)">$0.00</div>
-        <button onclick="logout()" class="btn" style="background: #444; color: white;">SAIR</button>
-        <div id="logs" class="logs"></div>
-    </div>
+<div class="box">
+    <h2>Deriv Bot 2.0</h2>
+    <p>Autenticação via OAuth2 + PKCE</p>
+    <button id="btnLogin">Conectar via Deriv Login</button>
+    <div id="status">Aguardando ação...</div>
 </div>
 
 <script>
-    // --- SUAS CREDENCIAIS CONFIGURADAS ---
-    const CONFIG = {
-        app_id: 63632, // O ID numérico da sua aplicação no painel da Deriv
-        token: 'pat_89180bbdb32921b11d2c81634fe4157d04e9cc8ac7ef9f62a9302be8f4da9c10',
-        redirect_uri: 'https://rlpereira78.github.io/Pegasus_9_5/'
-    };
+    // Configurações do seu App no GitHub/Deriv
+    const APP_ID = '33fc9mnRtBEDtNsLp4yh6'; // Substitua pelo seu ID registrado na Deriv
+    const REDIRECT_URI = window.location.origin + window.location.pathname;
 
-    let ws;
+    async function iniciarLoginPKCE() {
+        document.getElementById('status').innerText = "Gerando chaves de segurança...";
 
-    function init() {
-        // 1. Verifica se retornou do login via URL
+        // 1. Generate a random code_verifier
+        const array = crypto.getRandomValues(new Uint8Array(64));
+        const codeVerifier = Array.from(array)
+            .map(v => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[v % 66])
+            .join('');
+
+        // 2. Derive the code_challenge
+        const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
+        const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+
+        // 3. Generate a random state for CSRF protection
+        const state = crypto.getRandomValues(new Uint8Array(16))
+            .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
+
+        // 4. Store code_verifier and state before redirecting
+        sessionStorage.setItem('pkce_code_verifier', codeVerifier);
+        sessionStorage.setItem('oauth_state', state);
+
+        // 5. Redirecionar para a Deriv
+        const authUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&code_challenge=${codeChallenge}&code_challenge_method=S256&state=${state}`;
+        
+        document.getElementById('status').innerText = "Redirecionando...";
+        window.location.href = authUrl;
+    }
+
+    document.getElementById('btnLogin').onclick = iniciarLoginPKCE;
+
+    // Lógica para capturar o retorno da Deriv após o login
+    window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
-        const tokenFromUrl = urlParams.get('token1');
-
-        if (tokenFromUrl) {
-            localStorage.setItem('deriv_token', tokenFromUrl);
-            window.history.replaceState({}, document.title, window.location.pathname);
+        if (urlParams.has('acct1')) {
+            document.getElementById('status').innerText = "Login realizado com sucesso!";
+            console.log("Tokens recebidos na URL:", window.location.search);
+            // Aqui você capturaria o token 'token1' da URL para usar no WebSocket
         }
-
-        // 2. Prioridade: Token da URL > Token fixo no código > LocalStorage
-        const activeToken = localStorage.getItem('deriv_token') || CONFIG.token;
-
-        if (activeToken) {
-            connect(activeToken);
-        } else {
-            showLogin();
-        }
-    }
-
-    function connect(token) {
-        document.getElementById('status-msg').innerText = "Autenticando...";
-        ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${CONFIG.app_id}`);
-
-        ws.onopen = () => {
-            ws.send(JSON.stringify({ authorize: token }));
-        };
-
-        ws.onmessage = (msg) => {
-            const data = JSON.parse(msg.data);
-
-            if (data.error) {
-                addLog("Erro: " + data.error.message);
-                showLogin();
-                return;
-            }
-
-            if (data.msg_type === "authorize") {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('bot-screen').classList.remove('hidden');
-                document.getElementById('acc-display').innerText = data.authorize.email;
-                addLog("Login realizado com sucesso!");
-                
-                // Solicita saldo
-                ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
-            }
-
-            if (data.msg_type === "balance") {
-                document.getElementById('balance-display').innerText = `$${data.balance.balance.toFixed(2)}`;
-            }
-        };
-
-        ws.onclose = () => addLog("Conexão encerrada.");
-    }
-
-    function showLogin() {
-        document.getElementById('status-msg').innerText = "Login necessário para continuar.";
-        const btn = document.getElementById('btn-login');
-        btn.classList.remove('hidden');
-        btn.onclick = () => {
-            window.location.href = `https://oauth.deriv.com/oauth2/authorize?app_id=${CONFIG.app_id}&l=pt`;
-        };
-    }
-
-    function logout() {
-        localStorage.removeItem('deriv_token');
-        window.location.href = CONFIG.redirect_uri;
-    }
-
-    function addLog(text) {
-        const logDiv = document.getElementById('logs');
-        logDiv.innerHTML += `<div>> ${text}</div>`;
-        logDiv.scrollTop = logDiv.scrollHeight;
-    }
-
-    window.onload = init;
+    };
 </script>
+
 </body>
 </html>
