@@ -3,182 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLACK KNIGHT BOT - V2 (PAT SYSTEM)</title>
+    <title>BLACK KNIGHT - V2 PRO</title>
     <style>
-        :root {
-            --primary-color: #00ff00; --bg-color: #0a0a0a; --card-bg: #1a1a1a;
-            --text-color: #ffffff; --danger-color: #ff4444; --info-color: #00aaff;
-            --warning-color: #ffaa00;
-        }
-        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Consolas', monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { width: 100%; max-width: 550px; background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
-        h1 { text-align: center; color: var(--primary-color); font-size: 22px; letter-spacing: 3px; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
-        .status-bar { background: #000; padding: 12px; border-radius: 5px; margin-bottom: 10px; text-align: center; font-weight: bold; border-left: 5px solid var(--primary-color); }
-        .form-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .input-box { display: flex; flex-direction: column; }
-        .full-width { grid-column: span 2; }
-        label { font-size: 11px; color: #aaa; margin-bottom: 4px; }
-        input { background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px; outline: none; }
-        input:focus { border-color: var(--primary-color); }
+        :root { --green: #00ff00; --bg: #0a0a0a; --card: #1a1a1a; --danger: #ff4444; }
+        body { background: var(--bg); color: #fff; font-family: 'Consolas', monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { width: 95%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 0 40px #000; }
+        h1 { text-align: center; color: var(--green); font-size: 22px; letter-spacing: 4px; margin: 0 0 20px 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .status-box { background: #000; padding: 15px; text-align: center; font-weight: bold; margin-bottom: 20px; border-left: 4px solid var(--green); color: var(--green); }
+        .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        input { background: #111; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 5px; outline: none; width: 100%; box-sizing: border-box; }
+        input:focus { border-color: var(--green); }
         button { width: 100%; padding: 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
-        .btn-start { background: var(--primary-color); color: #000; }
-        .btn-stop { background: var(--danger-color); color: #fff; display: none; }
-        #log { margin-top: 20px; height: 150px; background: #050505; font-size: 11px; padding: 15px; overflow-y: auto; border-radius: 8px; border: 1px solid #222; }
-        .stats { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .stat-item { background: #000; padding: 10px; border-radius: 5px; text-align: center; border: 1px solid #222; }
+        .btn-start { background: var(--green); color: #000; }
+        .btn-stop { background: var(--danger); color: #fff; display: none; }
+        #log { margin-top: 15px; height: 150px; background: #050505; font-size: 11px; padding: 10px; overflow-y: auto; border: 1px solid #222; }
+        .stats { display: flex; justify-content: space-between; margin-top: 15px; font-size: 13px; background: #000; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>BLACK KNIGHT BOT</h1>
-    <div id="statusBar" class="status-bar">SISTEMA AGUARDANDO PAT</div>
+    <h1>BLACK KNIGHT</h1>
+    <div id="status" class="status-box">SISTEMA OFFLINE</div>
 
-    <div class="form-group">
-        <div class="input-box full-width">
-            <label>API TOKEN (PAT DERIV 2.0)</label>
-            <input type="password" id="apiToken" placeholder="Insira seu Token da Deriv">
-        </div>
-        <div class="input-box">
-            <label>STAKE</label>
+    <input type="password" id="apiToken" placeholder="COLE SEU PAT (TOKEN) AQUI" style="margin-bottom: 15px;">
+
+    <div class="input-group">
+        <div>
+            <label style="font-size: 9px; color: #777;">STAKE</label>
             <input type="number" id="stake" value="0.35" step="0.01">
         </div>
-        <div class="input-box">
-            <label>MARTINGALE</label>
-            <input type="number" id="martingale" value="2.1" step="0.1">
-        </div>
-        <div class="input-box">
-            <label>SEQUÊNCIA ALVO</label>
-            <input type="number" id="sequence" value="3">
-        </div>
-        <div class="input-box">
-            <label>STOP WIN ($)</label>
-            <input type="number" id="stopwin" value="5.00">
+        <div>
+            <label style="font-size: 9px; color: #777;">SEQUÊNCIA</label>
+            <input type="number" id="target" value="3">
         </div>
     </div>
 
-    <button id="btnStart" class="btn-start" onclick="iniciarBot()">CONECTAR E OPERAR</button>
-    <button id="btnStop" class="btn-stop" onclick="stopBot()">PARAR BOT</button>
+    <button id="btnAction" class="btn-start" onclick="toggleBot()">CONECTAR E INICIAR</button>
+    <button id="btnStop" class="btn-stop" onclick="location.reload()">PARAR BOT</button>
 
     <div class="stats">
-        <div class="stat-item">SALDO: <span id="statBalance" style="color: var(--info-color);">0.00</span></div>
-        <div class="stat-item">LUCRO: <span id="statProfit">0.00</span></div>
+        <span>LUCRO: <b id="profit">0.00</b></span>
+        <span>SALDO: <b id="balance">0.00</b></span>
     </div>
 
-    <div id="log"></div>
+    <div id="log">Aguardando Token...</div>
 </div>
 
 <script>
     let ws, isRunning = false, isTrading = false;
-    let initialStake, currentStake, martingale, targetSeq, stopWin, totalProfit = 0, recentDigits = [];
+    let sequence = [];
 
-    // --- INJETANDO SUA LÓGICA DE SEGURANÇA (GERAÇÃO DE CHAVES) ---
-    async function prepararSeguranca() {
+    // Lógica PKCE obrigatória integrada
+    async function getPKCE() {
         const array = crypto.getRandomValues(new Uint8Array(64));
-        const codeVerifier = Array.from(array).map(v => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[v % 66]).join('');
-        const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
-        const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        
-        sessionStorage.setItem('pkce_code_verifier', codeVerifier);
-        addLog("Segurança PKCE Gerada com sucesso.", "info");
-        return { codeVerifier, codeChallenge };
+        const verifier = Array.from(array).map(v => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[v % 66]).join('');
+        const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+        const challenge = btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        sessionStorage.setItem('pkce_code_verifier', verifier);
+        return { verifier, challenge };
     }
 
-    function addLog(msg, type = 'info') {
-        const logDiv = document.getElementById('log');
-        logDiv.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}<br>` + logDiv.innerHTML;
+    function addLog(msg, color = "#aaa") {
+        const log = document.getElementById('log');
+        const time = new Date().toLocaleTimeString();
+        log.innerHTML = `<div style="color:${color}">[${time}] ${msg}</div>` + log.innerHTML;
     }
 
-    async function iniciarBot() {
-        const token = document.getElementById('apiToken').value;
-        if (!token) return alert("Insira seu PAT!");
+    async function toggleBot() {
+        const token = document.getElementById('apiToken').value.trim();
+        if (!token) return alert("Por favor, cole seu Token!");
 
-        // Executa a sua lógica de segurança antes de conectar
-        await prepararSeguranca();
+        addLog("Iniciando segurança PKCE...", "#ffaa00");
+        await getPKCE();
 
-        initialStake = parseFloat(document.getElementById('stake').value);
-        currentStake = initialStake;
-        martingale = parseFloat(document.getElementById('martingale').value);
-        targetSeq = parseInt(document.getElementById('sequence').value);
-        stopWin = parseFloat(document.getElementById('stopwin').value);
-
-        // Conexão direta via WebSocket
-        ws = new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+        // Usando App ID 1 para máxima compatibilidade com PAT
+        ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1');
 
         ws.onopen = () => {
-            addLog("Conectando à Nova Deriv...");
+            addLog("Conectado ao servidor. Autenticando...");
             ws.send(JSON.stringify({ authorize: token }));
         };
 
         ws.onmessage = (msg) => {
             const data = JSON.parse(msg.data);
-            if (data.error) { addLog("ERRO: " + data.error.message, "danger"); stopBot(); return; }
+
+            if (data.error) {
+                addLog("ERRO: " + data.error.message, "#ff4444");
+                return;
+            }
 
             if (data.msg_type === 'authorize') {
                 isRunning = true;
-                document.getElementById('btnStart').style.display = 'none';
-                document.getElementById('btnStop').style.display = 'block';
+                document.getElementById('btnAction').style.display = "none";
+                document.getElementById('btnStop').style.display = "block";
+                document.getElementById('status').innerText = "CONECTADO: ANALISANDO";
+                addLog("Autenticação aceita!", "#00ff00");
                 ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
                 ws.send(JSON.stringify({ ticks: 'R_100', subscribe: 1 }));
-                addLog("Autenticado! Analisando mercado...", "success");
             }
 
-            if (data.msg_type === 'balance') document.getElementById('statBalance').innerText = data.balance.balance.toFixed(2);
-            
-            if (data.msg_type === 'tick' && isRunning && !isTrading) {
-                const digit = parseInt(data.tick.quote.toString().slice(-1));
-                const type = digit % 2 === 0 ? 'PAR' : 'IMPAR';
-                recentDigits.push(type);
-                if (recentDigits.length > targetSeq) recentDigits.shift();
-                
-                document.getElementById('statusBar').innerText = `ANALISANDO: ${recentDigits.join(' | ')}`;
+            if (data.msg_type === 'balance') {
+                document.getElementById('balance').innerText = data.balance.balance.toFixed(2);
+            }
 
-                if (recentDigits.length >= targetSeq) {
-                    if (recentDigits.every(v => v === 'PAR')) abrirOrdem('DIGITODD');
-                    else if (recentDigits.every(v => v === 'IMPAR')) abrirOrdem('DIGITEVEN');
+            if (data.msg_type === 'tick' && isRunning && !isTrading) {
+                const lastDigit = data.tick.quote.toString().slice(-1);
+                const type = lastDigit % 2 === 0 ? 'P' : 'I';
+                
+                sequence.push(type);
+                const limit = parseInt(document.getElementById('target').value);
+                if (sequence.length > limit) sequence.shift();
+
+                document.getElementById('status').innerText = `DÍGITOS: ${sequence.join(' | ')}`;
+
+                if (sequence.length >= limit) {
+                    if (sequence.every(v => v === 'P')) executeTrade('DIGITODD');
+                    else if (sequence.every(v => v === 'I')) executeTrade('DIGITEVEN');
                 }
             }
 
             if (data.msg_type === 'buy') {
                 isTrading = true;
+                addLog("Ordem enviada com sucesso!", "#00aaff");
                 ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id: data.buy.contract_id, subscribe: 1 }));
             }
 
             if (data.msg_type === 'proposal_open_contract' && data.proposal_open_contract.is_sold) {
                 const profit = parseFloat(data.proposal_open_contract.profit);
-                totalProfit += profit;
-                if (profit > 0) {
-                    addLog(`WIN: +$${profit.toFixed(2)}`, "success");
-                    currentStake = initialStake;
-                    recentDigits = [];
-                } else {
-                    addLog(`LOSS: -$${Math.abs(profit).toFixed(2)}`, "danger");
-                    currentStake = parseFloat((currentStake * martingale).toFixed(2));
-                }
-                document.getElementById('statProfit').innerText = totalProfit.toFixed(2);
+                const currentProfit = parseFloat(document.getElementById('profit').innerText) + profit;
+                document.getElementById('profit').innerText = currentProfit.toFixed(2);
+                document.getElementById('profit').style.color = currentProfit >= 0 ? "#00ff00" : "#ff4444";
+                
+                addLog(profit > 0 ? `WIN: +$${profit}` : `LOSS: $${profit}`, profit > 0 ? "#00ff00" : "#ff4444");
                 isTrading = false;
-                if(totalProfit >= stopWin) stopBot();
+                sequence = []; // Reseta análise após a entrada
             }
+        };
+
+        ws.onclose = () => {
+            addLog("Conexão encerrada.", "#ff4444");
+            isRunning = false;
         };
     }
 
-    function abrirOrdem(tipo) {
-        isTrading = true;
+    function executeTrade(contractType) {
+        if (isTrading) return;
+        const stake = document.getElementById('stake').value;
         ws.send(JSON.stringify({
-            buy: 1, price: currentStake,
+            buy: 1, price: stake,
             parameters: {
-                amount: currentStake, basis: 'stake', contract_type: tipo,
+                amount: stake, basis: 'stake', contract_type: contractType,
                 currency: 'USD', duration: 1, duration_unit: 't', symbol: 'R_100'
             }
         }));
-    }
-
-    function stopBot() {
-        isRunning = false;
-        if(ws) ws.close();
-        document.getElementById('btnStop').style.display = 'none';
-        document.getElementById('btnStart').style.display = 'block';
-        document.getElementById('statusBar').innerText = "BOT PARADO";
     }
 </script>
 </body>
