@@ -2,116 +2,147 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>BLACK KNIGHT V2 - FIXED</title>
+    <title>BLACK KNIGHT V3 - REST & OTP</title>
     <style>
         :root { --green: #00ff00; --bg: #0a0a0a; --card: #1a1a1a; --red: #ff4444; }
         body { background: var(--bg); color: #fff; font-family: 'Consolas', monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { width: 95%; max-width: 480px; background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 0 40px #000; }
-        h1 { text-align: center; color: var(--green); font-size: 20px; letter-spacing: 4px; margin: 0 0 20px 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .status-box { background: #000; padding: 12px; text-align: center; font-weight: bold; margin-bottom: 15px; border-left: 4px solid var(--green); color: var(--green); font-size: 14px; }
+        .container { width: 95%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 0 40px #000; }
+        h1 { text-align: center; color: var(--green); font-size: 20px; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .status-box { background: #000; padding: 12px; text-align: center; font-weight: bold; margin-bottom: 15px; border-left: 4px solid var(--green); color: var(--green); }
         input { background: #111; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 5px; outline: none; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
         button { width: 100%; padding: 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; background: var(--green); color: #000; }
-        #log { margin-top: 15px; height: 130px; background: #050505; font-size: 11px; padding: 10px; overflow-y: auto; border: 1px solid #222; }
+        #log { margin-top: 15px; height: 150px; background: #050505; font-size: 11px; padding: 10px; overflow-y: auto; border: 1px solid #222; color: #ccc; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>BLACK KNIGHT</h1>
-    <div id="status" class="status-box">OFFLINE</div>
+    <h1>BLACK KNIGHT V3</h1>
+    <div id="status" class="status-box">AGUARDANDO REST AUTH</div>
 
-    <input type="password" id="apiToken" placeholder="COLE SEU PAT (TOKEN)">
+    <input type="text" id="appId" placeholder="SEU APP ID (Ex: 16969)">
+    <input type="text" id="accountId" placeholder="ACCOUNT ID (Ex: CR123456 ou VRTC123)">
+    <input type="password" id="token" placeholder="BEARER TOKEN (PAT)">
     
-    <div style="display:flex; gap:10px;">
+    <div class="grid">
         <input type="number" id="stake" value="0.35" step="0.01">
         <input type="number" id="target" value="3">
     </div>
 
-    <button id="btnAction" onclick="iniciar()">CONECTAR E OPERAR</button>
-    <div id="log">Aguardando...</div>
+    <button id="btnAction" onclick="iniciarFluxo()">AUTENTICAR E INICIAR</button>
+    <div id="log">Siga o fluxo REST -> OTP -> WS</div>
 </div>
 
 <script>
     let ws, isTrading = false;
     let sequence = [];
 
-    function addLog(msg, color = "#aaa") {
+    function addLog(msg, color = "#ccc") {
         const log = document.getElementById('log');
         log.innerHTML = `<div style="color:${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>` + log.innerHTML;
     }
 
-    async function iniciar() {
-        const token = document.getElementById('apiToken').value.trim();
-        if (!token) return alert("Insira o Token!");
+    // PASSO 1: Chamada REST para obter o OTP
+    async function iniciarFluxo() {
+        const appId = document.getElementById('appId').value;
+        const accountId = document.getElementById('accountId').value;
+        const token = document.getElementById('token').value;
 
-        addLog("Preparando segurança PKCE...");
-        // Simulação PKCE interna requerida pela v2
-        const verifier = Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join('');
-        sessionStorage.setItem('pkce_verifier', verifier);
+        if (!appId || !accountId || !token) return alert("Preencha todos os campos!");
 
-        // ENDPOINT ALTERNATIVO (O mais estável para GitHub Pages)
-        ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=16969');
+        addLog("Chamando REST API para gerar OTP...", "#00aaff");
+
+        try {
+            const response = await fetch(`https://api.derivws.com/trading/v1/options/accounts/${accountId}/otp`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Deriv-App-Id': appId,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                addLog("ERRO REST: " + data.error.message, "#ff4444");
+                return;
+            }
+
+            // A resposta contém a URL do WebSocket já com o OTP
+            const wsUrl = data.ws_url; 
+            addLog("OTP Gerado! Conectando WebSocket...", "#00ff00");
+            conectarWebSocket(wsUrl);
+
+        } catch (err) {
+            addLog("Erro na requisição REST: " + err, "#ff4444");
+        }
+    }
+
+    // PASSO 2: Conectar no WebSocket autenticado via URL
+    function conectarWebSocket(url) {
+        ws = new WebSocket(url);
 
         ws.onopen = () => {
-            addLog("Conexão aberta. Autenticando...");
-            // O segredo aqui é enviar o comando puro conforme a v2 exige
-            ws.send(JSON.stringify({ authorize: token }));
+            addLog("WebSocket Conectado com Sucesso!");
+            document.getElementById('status').innerText = "CONECTADO: ANALISANDO";
+            // Inscrição nos Ticks
+            ws.send(JSON.stringify({ ticks: 'R_100', subscribe: 1 }));
+            ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
         };
 
         ws.onmessage = (msg) => {
             const data = JSON.parse(msg.data);
 
-            if (data.error) {
-                // Se der erro de token aqui, o problema é 100% no Token ou na conta
-                addLog("ERRO: " + data.error.message, "#ff4444");
-                console.error(data.error);
-                return;
-            }
-
-            if (data.msg_type === 'authorize') {
-                addLog("LOGADO COM SUCESSO!", "#00ff00");
-                document.getElementById('status').innerText = "CONECTADO";
-                document.getElementById('btnAction').disabled = true;
-                ws.send(JSON.stringify({ ticks: 'R_100', subscribe: 1 }));
-            }
-
-            if (data.msg_type === 'tick' && !isTrading) {
-                const lastDigit = data.tick.quote.toString().slice(-1);
-                const type = lastDigit % 2 === 0 ? 'P' : 'I';
+            if (data.msg_type === 'tick') {
+                const digit = data.tick.quote.toString().slice(-1);
+                const type = digit % 2 === 0 ? 'P' : 'I';
                 sequence.push(type);
-                const limit = parseInt(document.getElementById('target').value);
+                
+                const limit = document.getElementById('target').value;
                 if (sequence.length > limit) sequence.shift();
                 
-                document.getElementById('status').innerText = `SEQUÊNCIA: ${sequence.join('|')}`;
+                document.getElementById('status').innerText = `SEQ: ${sequence.join('|')}`;
 
-                if (sequence.length >= limit) {
-                    if (sequence.every(v => v === 'P')) trade('DIGITODD');
-                    else if (sequence.every(v => v === 'I')) trade('DIGITEVEN');
+                if (sequence.length >= limit && !isTrading) {
+                    if (sequence.every(v => v === 'P')) comprar('DIGITODD');
+                    else if (sequence.every(v => v === 'I')) comprar('DIGITEVEN');
                 }
             }
 
             if (data.msg_type === 'buy') {
                 isTrading = true;
-                addLog("Ordem aberta...");
+                addLog("Contrato Aberto!", "#00aaff");
             }
 
             if (data.msg_type === 'proposal_open_contract' && data.proposal_open_contract.is_sold) {
-                const win = data.proposal_open_contract.profit > 0;
-                addLog(win ? "WIN!" : "LOSS", win ? "#0f0" : "#f00");
+                const profit = data.proposal_open_contract.profit;
+                addLog(profit > 0 ? `WIN: +${profit}` : `LOSS: ${profit}`, profit > 0 ? "#0f0" : "#f00");
                 isTrading = false;
                 sequence = [];
             }
         };
+
+        ws.onclose = () => {
+            addLog("Conexão fechada.", "#ff4444");
+            document.getElementById('status').innerText = "OFFLINE";
+        };
     }
 
-    function trade(type) {
-        if (isTrading) return;
+    function comprar(tipo) {
         const stake = document.getElementById('stake').value;
         ws.send(JSON.stringify({
-            buy: 1, price: stake,
+            buy: 1,
+            price: stake,
             parameters: {
-                amount: stake, basis: 'stake', contract_type: type,
-                currency: 'USD', duration: 1, duration_unit: 't', symbol: 'R_100'
+                amount: parseFloat(stake),
+                basis: 'stake',
+                contract_type: tipo,
+                currency: 'USD',
+                duration: 1,
+                duration_unit: 't',
+                symbol: 'R_100'
             }
         }));
     }
