@@ -2,71 +2,317 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Deriv Bot 2.0 - PKCE Auth</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLACK KNIGHT BOT - V2 (PKCE)</title>
     <style>
-        body { font-family: sans-serif; background: #15171a; color: white; text-align: center; padding: 50px; }
-        .box { background: #1c1e22; padding: 30px; border-radius: 12px; display: inline-block; }
-        button { background: #ff444f; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #status { margin-top: 20px; color: #888; }
+        :root {
+            --primary-color: #00ff00;
+            --bg-color: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --text-color: #ffffff;
+            --danger-color: #ff4444;
+            --info-color: #00aaff;
+            --warning-color: #ffaa00;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Consolas', monospace;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            border: 1px solid #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 22px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .status-bar {
+            background: #000;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            border-left: 5px solid var(--primary-color);
+            text-transform: uppercase;
+        }
+
+        .seq-monitor {
+            background: #111;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--warning-color);
+            border: 1px dashed #333;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-box { display: flex; flex-direction: column; }
+        label { font-size: 11px; margin-bottom: 4px; color: #aaa; text-transform: uppercase; }
+        input {
+            background: #111; border: 1px solid #444; color: #fff; padding: 10px;
+            border-radius: 4px; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary-color); background: #000; }
+        .full-width { grid-column: span 2; }
+
+        button {
+            width: 100%; padding: 15px; border: none; border-radius: 5px;
+            cursor: pointer; font-weight: bold; font-size: 14px;
+            transition: 0.3s; text-transform: uppercase; margin-bottom: 10px;
+        }
+
+        .btn-auth { background: var(--info-color); color: #000; }
+        .btn-start { background: var(--primary-color); color: #000; display: none; }
+        .btn-stop { background: var(--danger-color); color: #fff; display: none; }
+
+        .stats {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-item {
+            background: #000; padding: 12px; border-radius: 5px;
+            text-align: center; border: 1px solid #222;
+        }
+
+        .stat-label { font-size: 9px; color: #777; margin-bottom: 5px; }
+        .stat-value { font-size: 16px; font-weight: bold; }
+
+        #log {
+            margin-top: 20px; height: 150px; background: #050505;
+            font-size: 11px; padding: 15px; overflow-y: auto;
+            border-radius: 8px; border: 1px solid #222;
+        }
+
+        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #111; }
+        .log-success { color: var(--primary-color); }
+        .log-error { color: var(--danger-color); }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>Deriv Bot 2.0</h2>
-    <p>Autenticação via OAuth2 + PKCE</p>
-    <button id="btnLogin">Conectar via Deriv Login</button>
-    <div id="status">Aguardando ação...</div>
+<div class="container">
+    <h1>BLACK KNIGHT BOT</h1>
+
+    <div id="statusBar" class="status-bar">AGUARDANDO AUTENTICAÇÃO</div>
+    <div id="seqMonitor" class="seq-monitor">FAÇA LOGIN PARA COMEÇAR</div>
+
+    <div class="form-group">
+        <div class="input-box">
+            <label>STAKE INICIAL</label>
+            <input type="number" id="stake" value="0.35" step="0.01">
+        </div>
+        <div class="input-box">
+            <label>MARTINGALE</label>
+            <input type="number" id="martingale" value="2.1" step="0.1">
+        </div>
+        <div class="input-box">
+            <label>SEQUÊNCIA ALVO</label>
+            <input type="number" id="sequence" value="3">
+        </div>
+        <div class="input-box">
+            <label>STOP WIN ($)</label>
+            <input type="number" id="stopwin" value="5.00">
+        </div>
+    </div>
+
+    <!-- BOTÕES DE CONTROLE -->
+    <button id="btnAuth" class="btn-auth" onclick="loginPKCE()">1. CONECTAR VIA DERIV (PAT 2.0)</button>
+    <button id="btnStart" class="btn-start" onclick="startBot()">2. INICIAR BLACK KNIGHT</button>
+    <button id="btnStop" class="btn-stop" onclick="stopBot()">PARAR EXECUÇÃO</button>
+
+    <div class="stats">
+        <div class="stat-item"><div class="stat-label">SALDO</div><div id="statBalance" class="stat-value">0.00</div></div>
+        <div class="stat-item"><div class="stat-label">LUCRO</div><div id="statProfit" class="stat-value">0.00</div></div>
+    </div>
+
+    <div id="log"></div>
 </div>
 
 <script>
-    // Configurações do seu App no GitHub/Deriv
-    const APP_ID = '33fc9mnRtBEDtNsLp4yh6'; // Substitua pelo seu ID registrado na Deriv
-    const REDIRECT_URI = window.location.origin + window.location.pathname;
+    // CONFIGURAÇÃO DERIV 2.0
+    const APP_ID = '1089'; // Substitua pelo seu APP ID real se necessário
+    let USER_TOKEN = "";
+    
+    let ws;
+    let isRunning = false;
+    let isTrading = false;
+    let initialStake, currentStake, martingale, targetSeq, stopWin;
+    let totalProfit = 0, wins = 0, losses = 0, recentDigits = [], directionToBet = null;
 
-    async function iniciarLoginPKCE() {
-        document.getElementById('status').innerText = "Gerando chaves de segurança...";
-
-        // 1. Generate a random code_verifier
+    // --- SISTEMA PKCE ---
+    async function loginPKCE() {
         const array = crypto.getRandomValues(new Uint8Array(64));
-        const codeVerifier = Array.from(array)
-            .map(v => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[v % 66])
-            .join('');
-
-        // 2. Derive the code_challenge
+        const codeVerifier = Array.from(array).map(v => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[v % 66]).join('');
         const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
-        const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/, '');
+        const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        const state = crypto.getRandomValues(new Uint8Array(16)).reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
 
-        // 3. Generate a random state for CSRF protection
-        const state = crypto.getRandomValues(new Uint8Array(16))
-            .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
-
-        // 4. Store code_verifier and state before redirecting
         sessionStorage.setItem('pkce_code_verifier', codeVerifier);
         sessionStorage.setItem('oauth_state', state);
 
-        // 5. Redirecionar para a Deriv
+        const redirectUri = window.location.href.split('?')[0];
         const authUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&code_challenge=${codeChallenge}&code_challenge_method=S256&state=${state}`;
         
-        document.getElementById('status').innerText = "Redirecionando...";
         window.location.href = authUrl;
     }
 
-    document.getElementById('btnLogin').onclick = iniciarLoginPKCE;
-
-    // Lógica para capturar o retorno da Deriv após o login
+    // --- CAPTURA DE RETORNO APÓS LOGIN ---
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('acct1')) {
-            document.getElementById('status').innerText = "Login realizado com sucesso!";
-            console.log("Tokens recebidos na URL:", window.location.search);
-            // Aqui você capturaria o token 'token1' da URL para usar no WebSocket
+        if (urlParams.has('token1')) {
+            USER_TOKEN = urlParams.get('token1');
+            document.getElementById('btnAuth').style.display = 'none';
+            document.getElementById('btnStart').style.display = 'block';
+            updateStatus("AUTENTICADO COM SUCESSO", "status-win");
+            addLog("Conexão PKCE estabelecida!", "success");
+            
+            // Limpa a URL para ficar limpa
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
     };
-</script>
 
+    // --- LÓGICA DO BOT ---
+    function updateStatus(text, className) {
+        const statusBar = document.getElementById('statusBar');
+        statusBar.innerText = text;
+        statusBar.className = 'status-bar ' + (className || '');
+    }
+
+    function addLog(msg, type = 'info') {
+        const logDiv = document.getElementById('log');
+        const entry = document.createElement('div');
+        entry.className = `log-entry log-${type}`;
+        entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        logDiv.insertBefore(entry, logDiv.firstChild);
+    }
+
+    function startBot() {
+        if(!USER_TOKEN) return alert("Erro de autenticação!");
+        
+        initialStake = parseFloat(document.getElementById('stake').value);
+        currentStake = initialStake;
+        martingale = parseFloat(document.getElementById('martingale').value);
+        targetSeq = parseInt(document.getElementById('sequence').value);
+        stopWin = parseFloat(document.getElementById('stopwin').value);
+
+        ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`);
+
+        ws.onopen = () => ws.send(JSON.stringify({ authorize: USER_TOKEN }));
+
+        ws.onmessage = (msg) => {
+            const data = JSON.parse(msg.data);
+            if (data.error) { addLog(data.error.message, 'error'); return; }
+
+            if (data.msg_type === 'authorize') {
+                isRunning = true;
+                document.getElementById('btnStart').style.display = 'none';
+                document.getElementById('btnStop').style.display = 'block';
+                ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+                ws.send(JSON.stringify({ ticks: 'R_100', subscribe: 1 }));
+                updateStatus("ANALISANDO R100...", "status-analyzing");
+            }
+
+            if (data.msg_type === 'balance') document.getElementById('statBalance').innerText = data.balance.balance.toFixed(2);
+            if (data.msg_type === 'tick' && isRunning && !isTrading) handleTick(data.tick);
+            
+            if (data.msg_type === 'buy') {
+                isTrading = true;
+                updateStatus("ORDEM ENVIADA", "");
+                ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id: data.buy.contract_id, subscribe: 1 }));
+            }
+
+            if (data.msg_type === 'proposal_open_contract' && data.proposal_open_contract.is_sold) {
+                handleResult(data.proposal_open_contract);
+            }
+        };
+    }
+
+    function handleTick(tick) {
+        const lastDigit = parseInt(tick.quote.toString().slice(-1));
+        const type = lastDigit % 2 === 0 ? 'PAR' : 'IMPAR';
+        
+        recentDigits.push(type);
+        if (recentDigits.length > targetSeq) recentDigits.shift();
+        document.getElementById('seqMonitor').innerText = `DÍGITOS: ${recentDigits.join(' | ')}`;
+
+        if (recentDigits.length >= targetSeq && !isTrading) {
+            const allEven = recentDigits.every(v => v === 'PAR');
+            const allOdd = recentDigits.every(v => v === 'IMPAR');
+
+            if (allEven) executeTrade('DIGITODD'); // Entra Ímpar se saiu muitos Pares
+            else if (allOdd) executeTrade('DIGITEVEN'); // Entra Par se saiu muitos Ímpares
+        }
+    }
+
+    function executeTrade(type) {
+        isTrading = true;
+        ws.send(JSON.stringify({
+            buy: 1, price: currentStake,
+            parameters: {
+                amount: currentStake, basis: 'stake', contract_type: type,
+                currency: 'USD', duration: 1, duration_unit: 't', symbol: 'R_100'
+            }
+        }));
+    }
+
+    function handleResult(contract) {
+        const profit = parseFloat(contract.profit);
+        if (profit > 0) {
+            totalProfit += profit;
+            currentStake = initialStake;
+            recentDigits = [];
+            addLog(`WIN: +$${profit.toFixed(2)}`, 'success');
+        } else {
+            totalProfit += profit;
+            currentStake = parseFloat((Math.abs(currentStake * martingale)).toFixed(2));
+            addLog(`LOSS: -$${Math.abs(profit).toFixed(2)}`, 'error');
+        }
+        document.getElementById('statProfit').innerText = totalProfit.toFixed(2);
+        if(totalProfit >= stopWin) stopBot();
+        setTimeout(() => { isTrading = false; }, 1000);
+    }
+
+    function stopBot() {
+        isRunning = false;
+        if(ws) ws.close();
+        document.getElementById('btnStop').style.display = 'none';
+        document.getElementById('btnStart').style.display = 'block';
+        updateStatus("BOT PARADO", "");
+    }
+</script>
 </body>
 </html>
