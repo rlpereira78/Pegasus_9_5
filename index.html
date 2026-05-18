@@ -173,18 +173,28 @@
 </div>
 
 <script>
-    /* --- MOTOR OAUTH DERIV - FIX CORREÇÃO DE RETORNO HÍBRIDO (# E ?) --- */
+    /* --- CONFIGURAÇÕES DE PRODUÇÃO DO SEU CLIENTE --- */
+    const CONFIG_PRODUCAO = {
+        // ATENÇÃO: Substitua o '1089' pelo número do seu APP ID criado no painel da Deriv
+        APP_ID_DEFINITIVO: '1089', 
+        REDIRECT_URI_DEFINITIVA: "https://rlpereira78.github.io/Pegasus_9_5/"
+    };
+
     const OAUTH_CONFIG = {
-        get appId() { return localStorage.getItem('oauth_app_id') || '1089'; },
+        get appId() { return localStorage.getItem('oauth_app_id') || CONFIG_PRODUCAO.APP_ID_DEFINITIVO; },
         get tToken() { return localStorage.getItem('oauth_t_token') || ''; },
-        get redirectUri() { return "https://rlpereira78.github.io/Pegasus_9_5/"; }
+        get redirectUri() { return CONFIG_PRODUCAO.REDIRECT_URI_DEFINITIVA; }
     };
 
     window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('oauth-app-id').value = localStorage.getItem('oauth_app_id') || '1089';
-        document.getElementById('oauth-t-token').value = localStorage.getItem('oauth_t_token') || '';
+        // Configura os valores padrões iniciais na UI de forma invisível
+        if(!localStorage.getItem('oauth_app_id')) {
+            localStorage.setItem('oauth_app_id', CONFIG_PRODUCAO.APP_ID_DEFINITIVO);
+        }
+        document.getElementById('oauth-app-id').value = OAUTH_CONFIG.appId;
+        document.getElementById('oauth-t-token').value = OAUTH_CONFIG.tToken;
 
-        // CORREÇÃO ESSENCIAL: Captura os dados caso a Deriv retorne usando '#' ou '?'
+        // Captura o retorno (Híbrido # ou ?) vindos da Deriv
         let stringDeBusca = window.location.search;
         if (!stringDeBusca && window.location.hash) {
             stringDeBusca = '?' + window.location.hash.substring(1);
@@ -209,6 +219,7 @@
     });
 
     function iniciarOAuthFlow(tipo) {
+        // ESCORPO CORRIGIDO: Modificado para pedir explicitamente as permissões de "read" e "trade"
         let oauthUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${OAUTH_CONFIG.appId}&l=PT&scope=read+trade&redirect_uri=${encodeURIComponent(OAUTH_CONFIG.redirectUri)}`;
 
         if (tipo === 'register' && OAUTH_CONFIG.tToken) {
