@@ -173,11 +173,10 @@
 </div>
 
 <script>
-    /* --- MOTOR OAUTH DERIV FIX GITHUB PAGES --- */
+    /* --- MOTOR OAUTH DERIV - FIX CORREÇÃO DE RETORNO HÍBRIDO (# E ?) --- */
     const OAUTH_CONFIG = {
         get appId() { return localStorage.getItem('oauth_app_id') || '1089'; },
         get tToken() { return localStorage.getItem('oauth_t_token') || ''; },
-        // URL Forçada e fixa baseada no seu ambiente de produção
         get redirectUri() { return "https://rlpereira78.github.io/Pegasus_9_5/"; }
     };
 
@@ -185,8 +184,13 @@
         document.getElementById('oauth-app-id').value = localStorage.getItem('oauth_app_id') || '1089';
         document.getElementById('oauth-t-token').value = localStorage.getItem('oauth_t_token') || '';
 
-        // Captura precisa dos parâmetros retornados na URL (funciona para query e hash da Deriv)
-        const urlParams = new URLSearchParams(window.location.search || window.location.hash.replace('#', '?'));
+        // CORREÇÃO ESSENCIAL: Captura os dados caso a Deriv retorne usando '#' ou '?'
+        let stringDeBusca = window.location.search;
+        if (!stringDeBusca && window.location.hash) {
+            stringDeBusca = '?' + window.location.hash.substring(1);
+        }
+
+        const urlParams = new URLSearchParams(stringDeBusca);
         const tokenRetornado = urlParams.get('token1'); 
 
         if (tokenRetornado) {
@@ -205,7 +209,6 @@
     });
 
     function iniciarOAuthFlow(tipo) {
-        // Monta a URL de autenticação apontando estritamente para o seu repositório
         let oauthUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${OAUTH_CONFIG.appId}&l=PT&scope=read+trade&redirect_uri=${encodeURIComponent(OAUTH_CONFIG.redirectUri)}`;
 
         if (tipo === 'register' && OAUTH_CONFIG.tToken) {
@@ -421,7 +424,7 @@
         }
     }
 
-    function ejecutarOrdem(tipo, barreira) {
+    function executarOrdem(tipo, barreira) {
         state.aguardandoContrato = true;
         document.getElementById('duelo-sinal').textContent = tipo === "DIGITUNDER" ? "UNDER 5" : "OVER 4";
         state.ws.send(JSON.stringify({
