@@ -173,47 +173,43 @@
 </div>
 
 <script>
-    /* --- MOTOR OAUTH DERIV ATUALIZADO --- */
+    /* --- MOTOR OAUTH DERIV FIX GITHUB PAGES --- */
     const OAUTH_CONFIG = {
         get appId() { return localStorage.getItem('oauth_app_id') || '1089'; },
         get tToken() { return localStorage.getItem('oauth_t_token') || ''; },
-        get redirectUri() { return window.location.origin + window.location.pathname; }
+        // URL Forçada e fixa baseada no seu ambiente de produção
+        get redirectUri() { return "https://rlpereira78.github.io/Pegasus_9_5/"; }
     };
 
     window.addEventListener('DOMContentLoaded', () => {
-        // Carrega as configurações visuais nos inputs
         document.getElementById('oauth-app-id').value = localStorage.getItem('oauth_app_id') || '1089';
         document.getElementById('oauth-t-token').value = localStorage.getItem('oauth_t_token') || '';
 
-        // 1. Verifica se existem novos parâmetros vindo da Deriv na URL
-        const urlParams = new URLSearchParams(window.location.search);
+        // Captura precisa dos parâmetros retornados na URL (funciona para query e hash da Deriv)
+        const urlParams = new URLSearchParams(window.location.search || window.location.hash.replace('#', '?'));
         const tokenRetornado = urlParams.get('token1'); 
 
         if (tokenRetornado) {
-            // Se um novo token chegou, armazena imediatamente sobrescrevendo sessões inválidas
             localStorage.setItem('oauth_access_token', tokenRetornado);
             limparParametrosURL();
             liberarTelaApp(tokenRetornado);
-            log("Novo token de acesso recebido com sucesso!", "win");
+            log("Autenticado via GitHub Pages com sucesso!", "win");
             return;
         }
 
-        // 2. Se não tem token na URL, tenta pegar o último token guardado localmente
         const tokenSalvo = localStorage.getItem('oauth_access_token');
         if (tokenSalvo) {
             liberarTelaApp(tokenSalvo);
-            log("Sessão antiga recuperada localmente.", "info");
+            log("Sessão ativa recuperada.", "info");
         }
     });
 
     function iniciarOAuthFlow(tipo) {
-        // Envia o escopo exato solicitado (read+trade) usando o endpoint oficial de autorização direta
-        let oauthUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${OAUTH_CONFIG.appId}&l=PT&scope=read+trade`;
+        // Monta a URL de autenticação apontando estritamente para o seu repositório
+        let oauthUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${OAUTH_CONFIG.appId}&l=PT&scope=read+trade&redirect_uri=${encodeURIComponent(OAUTH_CONFIG.redirectUri)}`;
 
-        if (tipo === 'register') {
-            if (OAUTH_CONFIG.tToken) {
-                oauthUrl += `&${OAUTH_CONFIG.tToken}`;
-            }
+        if (tipo === 'register' && OAUTH_CONFIG.tToken) {
+            oauthUrl += `&${OAUTH_CONFIG.tToken}`;
         }
         window.location.href = oauthUrl;
     }
@@ -227,7 +223,7 @@
     function pularLoginManual() {
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('main-layout-app').style.display = 'grid';
-        log("Modo manual ativado. Insira seu token na sidebar e clique em Iniciar.", "info");
+        log("Modo manual ativado.", "info");
     }
 
     function fazerLogout() {
@@ -253,7 +249,7 @@
         localStorage.setItem('oauth_app_id', document.getElementById('oauth-app-id').value.trim());
         localStorage.setItem('oauth_t_token', document.getElementById('oauth-t-token').value.trim());
         fecharConfigModal();
-        log("Parâmetros do App ID atualizados.", "info");
+        log("Configurações salvas. Prontos para nova autenticação.", "info");
     }
 
     /* --- MOTOR CORE DO ROBÔ --- */
@@ -425,7 +421,7 @@
         }
     }
 
-    function executarOrdem(tipo, barreira) {
+    function ejecutarOrdem(tipo, barreira) {
         state.aguardandoContrato = true;
         document.getElementById('duelo-sinal').textContent = tipo === "DIGITUNDER" ? "UNDER 5" : "OVER 4";
         state.ws.send(JSON.stringify({
