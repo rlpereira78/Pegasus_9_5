@@ -37,7 +37,7 @@
         .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 999; }
         .modal-group { margin-bottom: 10px; text-align: left; }
         
-        /* --- ESTRUTURA ORIGINAL MANUTENIDA --- */
+        /* --- ESTRUTURA ORIGINAL --- */
         .main-layout { display: none; grid-template-columns: 320px 1fr; grid-template-rows: auto 1fr; height: 100vh; padding: 10px; gap: 10px; }
         .header-full { grid-column: 1 / span 2; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
         .sidebar { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
@@ -173,7 +173,7 @@
 </div>
 
 <script>
-    /* --- MOTOR OAUTH DERIV SIMPLIFICADO --- */
+    /* --- MOTOR OAUTH DERIV ATUALIZADO --- */
     const OAUTH_CONFIG = {
         get appId() { return localStorage.getItem('oauth_app_id') || '1089'; },
         get tToken() { return localStorage.getItem('oauth_t_token') || ''; },
@@ -181,44 +181,40 @@
     };
 
     window.addEventListener('DOMContentLoaded', () => {
-        // Inicializa inputs das configurações salvas
+        // Carrega as configurações visuais nos inputs
         document.getElementById('oauth-app-id').value = localStorage.getItem('oauth_app_id') || '1089';
         document.getElementById('oauth-t-token').value = localStorage.getItem('oauth_t_token') || '';
 
-        // 1. Se já possuir um token salvo de uma sessão válida anterior, pula direto para o app
-        const tokenSalvo = localStorage.getItem('oauth_access_token');
-        if (tokenSalvo) {
-            liberarTelaApp(tokenSalvo);
-            log("Sessão recuperada do cache local.", "info");
-            return;
-        }
-
-        // 2. Captura os parâmetros retornados diretamente pela URL da Deriv
+        // 1. Verifica se existem novos parâmetros vindo da Deriv na URL
         const urlParams = new URLSearchParams(window.location.search);
-        
-        // A Deriv retorna parametros como acct1, token1, acct2, token2... Pegamos o token1
         const tokenRetornado = urlParams.get('token1'); 
 
         if (tokenRetornado) {
+            // Se um novo token chegou, armazena imediatamente sobrescrevendo sessões inválidas
             localStorage.setItem('oauth_access_token', tokenRetornado);
             limparParametrosURL();
             liberarTelaApp(tokenRetornado);
-            log("Autenticação via Deriv realizada com sucesso!", "win");
+            log("Novo token de acesso recebido com sucesso!", "win");
+            return;
+        }
+
+        // 2. Se não tem token na URL, tenta pegar o último token guardado localmente
+        const tokenSalvo = localStorage.getItem('oauth_access_token');
+        if (tokenSalvo) {
+            liberarTelaApp(tokenSalvo);
+            log("Sessão antiga recuperada localmente.", "info");
         }
     });
 
     function iniciarOAuthFlow(tipo) {
-        // Define o idioma e escopos exigidos: read (ver perfil/dados) + trade (fazer negociações)
+        // Envia o escopo exato solicitado (read+trade) usando o endpoint oficial de autorização direta
         let oauthUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${OAUTH_CONFIG.appId}&l=PT&scope=read+trade`;
 
-        // Se for clique em Cadastrar, adiciona parâmetro de tracking/registro
         if (tipo === 'register') {
             if (OAUTH_CONFIG.tToken) {
                 oauthUrl += `&${OAUTH_CONFIG.tToken}`;
             }
         }
-
-        // Redireciona o usuário para a página de autorização da Deriv
         window.location.href = oauthUrl;
     }
 
@@ -257,10 +253,10 @@
         localStorage.setItem('oauth_app_id', document.getElementById('oauth-app-id').value.trim());
         localStorage.setItem('oauth_t_token', document.getElementById('oauth-t-token').value.trim());
         fecharConfigModal();
-        log("Configurações locais de parâmetros OAuth atualizadas.", "info");
+        log("Parâmetros do App ID atualizados.", "info");
     }
 
-    /* --- MOTOR CORE DO ROBÔ ORIGINAL --- */
+    /* --- MOTOR CORE DO ROBÔ --- */
     let state = {
         ws: null, rodando: false, pausado: false, banca: 0, wins: 0, losses: 0, lucro: 0,
         stakeInicial: 0.35, stakeAtual: 0.35, meta: 0, stopLoss: 0, martgh: 2.1,
@@ -329,11 +325,18 @@
         state.ticksContados = 0;
         state.analiseConcluida = false;
 
+        log("Socket aberto. Enviando comando Authorize...", "info");
         state.ws = new WebSocket(`wss://ws.binaryws.com/websockets/v3?app_id=${OAUTH_CONFIG.appId}`);
         state.ws.onopen = () => state.ws.send(JSON.stringify({ authorize: token }));
 
         state.ws.onmessage = (msg) => {
             const data = JSON.parse(msg.data);
+
+            if (data.error) {
+                log(`ERRO: ${data.error.message}`, "loss");
+                alert(`Erro retornado da Deriv: ${data.error.message}`);
+                return;
+            }
 
             if (data.msg_type === 'balance') {
                 state.banca = data.balance.balance;
@@ -422,7 +425,7 @@
         }
     }
 
-    function ejecutarOrdem(tipo, barreira) {
+    function executarOrdem(tipo, barreira) {
         state.aguardandoContrato = true;
         document.getElementById('duelo-sinal').textContent = tipo === "DIGITUNDER" ? "UNDER 5" : "OVER 4";
         state.ws.send(JSON.stringify({
